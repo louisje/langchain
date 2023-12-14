@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 import os
 import sys
+import json
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -518,6 +519,7 @@ class ChatOpenAI(BaseChatModel):
             return await agenerate_from_stream(stream_iter)
 
         message_dicts, params = self._create_message_dicts(messages, stop)
+        print(json.dumps(message_dicts)) # Qoo
         params = {
             **params,
             **({"stream": stream} if stream is not None else {}),
@@ -526,6 +528,7 @@ class ChatOpenAI(BaseChatModel):
         response = await acompletion_with_retry(
             self, messages=message_dicts, run_manager=run_manager, **params
         )
+        print(json.dumps(response)) # Qoo
         return self._create_chat_result(response)
 
     @property

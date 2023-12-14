@@ -41,6 +41,7 @@ from langchain.chat_models.minimax import MiniMaxChat
 from langchain.chat_models.mlflow import ChatMlflow
 from langchain.chat_models.mlflow_ai_gateway import ChatMLflowAIGateway
 from langchain.chat_models.ollama import ChatOllama
+from langchain.chat_models.ffm import ChatFFM
 from langchain.chat_models.openai import ChatOpenAI
 from langchain.chat_models.pai_eas_endpoint import PaiEasChatEndpoint
 from langchain.chat_models.promptlayer_openai import PromptLayerChatOpenAI
@@ -49,6 +50,7 @@ from langchain.chat_models.volcengine_maas import VolcEngineMaasChat
 from langchain.chat_models.yandex import ChatYandexGPT
 
 __all__ = [
+    "ChatFFM",
     "ChatOpenAI",
     "BedrockChat",
     "AzureChatOpenAI",
