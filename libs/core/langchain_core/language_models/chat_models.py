@@ -81,13 +81,28 @@ async def agenerate_from_stream(
 ) -> ChatResult:
     """Async generate from a stream."""
 
+    if stream is None:
+        raise ValueError("Input stream cannot be None")
+
     generation: Optional[ChatGenerationChunk] = None
     async for chunk in stream:
         if generation is None:
             generation = chunk
         else:
             generation += chunk
-    assert generation is not None
+
+    if generation is None:
+        print("No valid chunks found in the stream")
+        return ChatResult(
+            generations=[
+                ChatGeneration(
+                    message=message_chunk_to_message(
+                        AIMessage(content="[[ Empty reponse from server! ]]")
+                    )
+                )
+            ]
+        )
+
     return ChatResult(
         generations=[
             ChatGeneration(

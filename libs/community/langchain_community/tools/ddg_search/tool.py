@@ -42,13 +42,13 @@ class DuckDuckGoSearchRun(BaseTool):
 class DuckDuckGoSearchResults(BaseTool):
     """Tool that queries the DuckDuckGo search API and gets back json."""
 
-    name: str = "DuckDuckGo Results JSON"
+    name: str = "DuckDuckGo"
     description: str = (
         "A wrapper around Duck Duck Go Search. "
         "Useful for when you need to answer questions about current events. "
-        "Input should be a search query. Output is a JSON array of the query results"
+        "Input should be a search query. Output is a JSON array of the query results. "
     )
-    max_results: int = Field(alias="num_results", default=4)
+    max_results: int = Field(alias="num_results", default=5)
     api_wrapper: DuckDuckGoSearchAPIWrapper = Field(
         default_factory=DuckDuckGoSearchAPIWrapper
     )

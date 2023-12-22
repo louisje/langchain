@@ -20,7 +20,7 @@ class OpenWeatherMapQueryRun(BaseTool):
     description: str = (
         "A wrapper around OpenWeatherMap API. "
         "Useful for fetching current weather information for a specified location. "
-        "Input should be a location string (e.g. London,GB)."
+        "Input should be a location string (e.g. Taipei, Taiwan)."
     )
 
     def _run(

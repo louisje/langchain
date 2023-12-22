@@ -190,6 +190,8 @@ class BaseFormosaFoundationModel(BaseLLM):
             response.encoding = "utf-8"
 
             for line in response.iter_lines():
+                if len(line) == 0:
+                    continue
                 data = line.lstrip(b"data: ").decode("utf-8")
                 if data == "[DONE]":  # type: ignore
                     break
@@ -198,7 +200,11 @@ class BaseFormosaFoundationModel(BaseLLM):
                 if re.search(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6}", data):
                     continue
                 data = json.loads(data)  # type: ignore
-                if "generated_text" not in data:
+                if (
+                    "generated_text" not in data
+                    or data["generated_text"] is None
+                    or len(data["generated_text"]) == 0
+                ):
                     continue
                 yield data
 
@@ -293,12 +299,6 @@ class ChatFFM(BaseChatModel, BaseFormosaFoundationModel):
         async for chunk in self._acall(messages=message_dicts, stop=stop, **params):
             if not isinstance(chunk, dict):
                 chunk = chunk.dict()
-            if (
-                "generated_text" not in chunk
-                or chunk["generated_text"] is None
-                or len(chunk["generated_text"]) == 0
-            ):
-                continue
             ai_message_chunk = AIMessageChunk(content=chunk["generated_text"])
             finish_reason = chunk.get("finish_reason")
             generation_info = (
