@@ -181,11 +181,10 @@ class BaseFormosaFoundationModel(BaseLLM):
                 stream=True,
             )
             if response.status_code != 200:
-                detail = generated_text.get("detail")
                 raise ValueError(
                     f"FormosaFoundationModel endpoint_url: {endpoint_url}\n"
                     f"error raised with status code {response.status_code}\n"
-                    f"Details: {detail}\n"
+                    f"Details: {response.text}\n"
                 )
             response.encoding = "utf-8"
 
