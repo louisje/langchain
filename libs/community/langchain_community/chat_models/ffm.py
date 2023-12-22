@@ -244,7 +244,7 @@ class ChatFFM(BaseChatModel, BaseFormosaFoundationModel):
         elif isinstance(message, FunctionMessage):
             message_dict = {
                 "role": "human",
-                "content": f"After calling tool `{message.name}`, we got response:\n\n{message.content}",
+                "content": f"呼叫工具`{message.name}`之後我們得到以下回覆：\n\n{message.content}",
             }
         else:
             raise ValueError(f"Got unknown type {message}")

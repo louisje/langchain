@@ -16,7 +16,8 @@ class WikipediaQueryRun(BaseTool):
         "A wrapper around Wikipedia. "
         "Useful for when you need to answer general questions about "
         "people, places, companies, facts, historical events, or other subjects. "
-        "Input should be a search query."
+        "Input should be a search query. "
+        "Special attention: Only English is allowed. If you have inquiries in other languages, please provide accurate translations."
     )
     api_wrapper: WikipediaAPIWrapper
 
