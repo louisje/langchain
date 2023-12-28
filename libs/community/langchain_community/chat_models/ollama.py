@@ -13,6 +13,7 @@ from langchain_core.messages import (
     ChatMessage,
     HumanMessage,
     SystemMessage,
+    FunctionMessage,
 )
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
 
@@ -102,12 +103,16 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
                 role = "assistant"
             elif isinstance(message, SystemMessage):
                 role = "system"
+            elif isinstance(message, FunctionMessage):
+                role = "user"
             else:
                 raise ValueError("Received unsupported message type for Ollama.")
 
             content = ""
             images = []
-            if isinstance(message.content, str):
+            if isinstance(message, FunctionMessage):
+                content = f"After calling tool `{message.name}` we got：\n\n{message.content}"
+            elif isinstance(message.content, str):
                 content = message.content
             else:
                 for content_part in message.content:
