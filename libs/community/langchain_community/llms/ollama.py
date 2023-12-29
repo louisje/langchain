@@ -182,6 +182,7 @@ class _OllamaCommon(BaseLanguageModel):
             request_payload = {
                 "prompt": payload.get("prompt"),
                 "images": payload.get("images", []),
+                "stream": True,
                 **params,
             }
 

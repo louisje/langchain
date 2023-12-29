@@ -31,7 +31,7 @@ def render_text_description(tools: List[BaseTool]) -> str:
         search: This tool is used for search
         calculator: This tool is used for math
     """
-    return "\n".join([f"{tool.name}: {tool.description}" for tool in tools])
+    return "\n".join([f"{i+1}. {tool.name}: {tool.description}" for i, tool in enumerate(tools)])
 
 
 def render_text_description_and_args(tools: List[BaseTool]) -> str:

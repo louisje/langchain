@@ -3,6 +3,7 @@ from typing import Any, Dict, Iterator, List, Optional, Union
 
 from langchain_core._api import deprecated
 from langchain_core.callbacks import (
+    AsyncCallbackManagerForLLMRun,
     CallbackManagerForLLMRun,
 )
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -58,6 +59,8 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
             from langchain_community.chat_models import ChatOllama
             ollama = ChatOllama(model="llama2")
     """
+
+    streaming: bool = False
 
     @property
     def _llm_type(self) -> str:
@@ -154,18 +157,20 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
         stop: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> Iterator[str]:
+        _ollama_messages = self._convert_messages_to_ollama_messages(messages)
+        print(_ollama_messages) # Qoo
         payload = {
-            "messages": self._convert_messages_to_ollama_messages(messages),
+            "messages": _ollama_messages,
         }
         yield from self._create_stream(
             payload=payload, stop=stop, api_url=f"{self.base_url}/api/chat/", **kwargs
         )
 
-    def _chat_stream_with_aggregation(
+    async def _chat_stream_with_aggregation(
         self,
         messages: List[BaseMessage],
         stop: Optional[List[str]] = None,
-        run_manager: Optional[CallbackManagerForLLMRun] = None,
+        run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
         verbose: bool = False,
         **kwargs: Any,
     ) -> ChatGenerationChunk:
@@ -178,14 +183,47 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
                 else:
                     final_chunk += chunk
                 if run_manager:
-                    run_manager.on_llm_new_token(
-                        chunk.text,
+                    await run_manager.on_llm_new_token(
+                        token=chunk.text,
                         verbose=verbose,
+                        chuck=chunk,
                     )
         if final_chunk is None:
             raise ValueError("No data received from Ollama stream.")
 
         return final_chunk
+
+    async def _agenerate(
+        self,
+        messages: List[BaseMessage],
+        stop: Optional[List[str]] = None,
+        run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
+        stream: Optional[bool] = None,
+        **kwargs: Any,
+    ) -> ChatResult:
+
+#       should_stream = stream if stream is not None else self.streaming
+#       if should_stream:
+#           return await self._agenerate_stream(
+#               messages,
+#               stop=stop,
+#               run_manager=run_manager,
+#               **kwargs,
+#           )
+
+        final_chunk = await self._chat_stream_with_aggregation(
+            messages,
+            stop=stop,
+            run_manager=run_manager,
+            verbose=self.verbose,
+            **kwargs,
+        )
+        print(final_chunk) # Qoo
+        chat_generation = ChatGeneration(
+            message=final_chunk.message,
+            generation_info=final_chunk.generation_info,
+        )
+        return ChatResult(generations=[chat_generation])
 
     def _generate(
         self,

@@ -328,7 +328,7 @@ class ChatFFM(BaseChatModel, BaseFormosaFoundationModel):
         message_dicts, params = self._create_message_dicts(messages, stop)
         print(json.dumps(message_dicts))  # Qoo
         params = {**params, **kwargs}
-        response = self._call(messages=message_dicts)
+        response = self._call(messages=message_dicts, stop=stop, **params)
         print(json.dumps(response))  # Qoo
         if type(response) is str:  # response is not the format of dictionary
             return response
