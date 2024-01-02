@@ -294,7 +294,7 @@ class ChatFFM(BaseChatModel, BaseFormosaFoundationModel):
     ) -> AsyncIterator[ChatGenerationChunk]:
         message_dicts, params = self._create_message_dicts(messages, stop)
         params = {**params, **kwargs}
-
+        print(message_dicts)  # Qoo
         async for chunk in self._acall(messages=message_dicts, stop=stop, **params):
             if not isinstance(chunk, dict):
                 chunk = chunk.dict()
