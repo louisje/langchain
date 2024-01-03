@@ -100,7 +100,7 @@ class _OllamaCommon(BaseLanguageModel):
     format: Optional[str] = None
     """Specify the format of the output (e.g., json)"""
 
-    timeout: Optional[int] = None
+    timeout: Optional[int] = 300000
     """Timeout for the request stream"""
 
     @property
