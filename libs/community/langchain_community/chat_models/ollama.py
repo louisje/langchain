@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, Iterator, List, Optional, Union
+from typing import Any, AsyncIterator, Dict, Iterator, List, Optional, Union
 
 from langchain_core._api import deprecated
 from langchain_core.callbacks import (
@@ -166,7 +166,21 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
             payload=payload, stop=stop, api_url=f"{self.base_url}/api/chat/", **kwargs
         )
 
-    async def _chat_stream_with_aggregation(
+    async def _acreate_chat_stream(
+        self,
+        messages: List[BaseMessage],
+        stop: Optional[List[str]] = None,
+        **kwargs: Any,
+    ) -> AsyncIterator[str]:
+        payload = {
+            "messages": self._convert_messages_to_ollama_messages(messages),
+        }
+        async for stream_resp in self._acreate_stream(
+            payload=payload, stop=stop, api_url=f"{self.base_url}/api/chat/", **kwargs
+        ):
+            yield stream_resp
+
+    def _chat_stream_with_aggregation(
         self,
         messages: List[BaseMessage],
         stop: Optional[List[str]] = None,
@@ -183,7 +197,7 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
                 else:
                     final_chunk += chunk
                 if run_manager:
-                    await run_manager.on_llm_new_token(
+                    run_manager.on_llm_new_token(
                         token=chunk.text,
                         verbose=verbose,
                         chuck=chunk,
@@ -193,37 +207,32 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
 
         return final_chunk
 
-    async def _agenerate(
+    async def _achat_stream_with_aggregation(
         self,
         messages: List[BaseMessage],
         stop: Optional[List[str]] = None,
         run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
-        stream: Optional[bool] = None,
+        verbose: bool = False,
         **kwargs: Any,
-    ) -> ChatResult:
-
-#       should_stream = stream if stream is not None else self.streaming
-#       if should_stream:
-#           return await self._agenerate_stream(
-#               messages,
-#               stop=stop,
-#               run_manager=run_manager,
-#               **kwargs,
-#           )
-
-        final_chunk = await self._chat_stream_with_aggregation(
-            messages,
-            stop=stop,
-            run_manager=run_manager,
-            verbose=self.verbose,
-            **kwargs,
-        )
+    ) -> ChatGenerationChunk:
+        final_chunk: Optional[ChatGenerationChunk] = None
+        async for stream_resp in self._acreate_chat_stream(messages, stop, **kwargs):
+            if stream_resp:
+                chunk = _chat_stream_response_to_chat_generation_chunk(stream_resp)
+                if final_chunk is None:
+                    final_chunk = chunk
+                else:
+                    final_chunk += chunk
+                if run_manager:
+                    await run_manager.on_llm_new_token(
+                        chunk.text,
+                        verbose=verbose,
+                    )
         print(final_chunk) # Qoo
-        chat_generation = ChatGeneration(
-            message=final_chunk.message,
-            generation_info=final_chunk.generation_info,
-        )
-        return ChatResult(generations=[chat_generation])
+        if final_chunk is None:
+            raise ValueError("No data received from Ollama stream.")
+
+        return final_chunk
 
     def _generate(
         self,
@@ -262,6 +271,43 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
         )
         return ChatResult(generations=[chat_generation])
 
+    async def _agenerate(
+        self,
+        messages: List[BaseMessage],
+        stop: Optional[List[str]] = None,
+        run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
+        **kwargs: Any,
+    ) -> ChatResult:
+        """Call out to Ollama's generate endpoint.
+
+        Args:
+            messages: The list of base messages to pass into the model.
+            stop: Optional list of stop words to use when generating.
+
+        Returns:
+            Chat generations from the model
+
+        Example:
+            .. code-block:: python
+
+                response = ollama([
+                    HumanMessage(content="Tell me about the history of AI")
+                ])
+        """
+
+        final_chunk = await self._achat_stream_with_aggregation(
+            messages,
+            stop=stop,
+            run_manager=run_manager,
+            verbose=self.verbose,
+            **kwargs,
+        )
+        chat_generation = ChatGeneration(
+            message=AIMessage(content=final_chunk.text),
+            generation_info=final_chunk.generation_info,
+        )
+        return ChatResult(generations=[chat_generation])
+
     def _stream(
         self,
         messages: List[BaseMessage],
@@ -272,7 +318,7 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
         try:
             for stream_resp in self._create_chat_stream(messages, stop, **kwargs):
                 if stream_resp:
-                    chunk = _stream_response_to_chat_generation_chunk(stream_resp)
+                    chunk = _chat_stream_response_to_chat_generation_chunk(stream_resp)
                     yield chunk
                     if run_manager:
                         run_manager.on_llm_new_token(
@@ -281,6 +327,29 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
                         )
         except OllamaEndpointNotFoundError:
             yield from self._legacy_stream(messages, stop, **kwargs)
+
+    async def _astream(
+        self,
+        messages: List[BaseMessage],
+        stop: Optional[List[str]] = None,
+        run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
+        **kwargs: Any,
+    ) -> AsyncIterator[ChatGenerationChunk]:
+        try:
+            async for stream_resp in self._acreate_chat_stream(
+                messages, stop, **kwargs
+            ):
+                if stream_resp:
+                    chunk = _chat_stream_response_to_chat_generation_chunk(stream_resp)
+                    yield chunk
+                    if run_manager:
+                        await run_manager.on_llm_new_token(
+                            chunk.text,
+                            verbose=self.verbose,
+                        )
+        except OllamaEndpointNotFoundError:
+            async for chunk in self._legacy_astream(messages, stop, **kwargs):
+                yield chunk
 
     @deprecated("0.0.3", alternative="_stream")
     def _legacy_stream(
