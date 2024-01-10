@@ -989,13 +989,13 @@ jupyter-server = ">=1.1.2"
 
 [[package]]
 name = "jupyter-server"
-version = "2.12.2"
+version = "2.12.3"
 description = "The backend—i.e. core services, APIs, and REST endpoints—to Jupyter web applications."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "jupyter_server-2.12.2-py3-none-any.whl", hash = "sha256:abcfa33f98a959f908c8733aa2d9fa0101d26941cbd49b148f4cef4d3046fc61"},
-    {file = "jupyter_server-2.12.2.tar.gz", hash = "sha256:5eae86be15224b5375cdec0c3542ce72ff20f7a25297a2a8166a250bb455a519"},
+    {file = "jupyter_server-2.12.3-py3-none-any.whl", hash = "sha256:6f85310ea5e6068568a521f079fba99d8d17e4884dd1d602ab0f43b3115204a8"},
+    {file = "jupyter_server-2.12.3.tar.gz", hash = "sha256:a1d2d51e497b1a6256c48b6940b0dd49b2553981baf1690077c37792f1fa23a1"},
 ]
 
 [package.dependencies]
@@ -1125,13 +1125,13 @@ files = [
 
 [[package]]
 name = "langsmith"
-version = "0.0.78"
+version = "0.0.79"
 description = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
 optional = false
 python-versions = ">=3.8.1,<4.0"
 files = [
-    {file = "langsmith-0.0.78-py3-none-any.whl", hash = "sha256:d7c8300700dde0cea87388177c2552187e87fb4ae789510712e7654db72b5c04"},
-    {file = "langsmith-0.0.78.tar.gz", hash = "sha256:a7d7f1639072aeb12115a931eb6d4c53810a480a1fec90bc8744f232765f3c81"},
+    {file = "langsmith-0.0.79-py3-none-any.whl", hash = "sha256:be0374e913c36d9f6a13dd6b6e20a506066d5a0f3abfd476f9cf9e0b086ed744"},
+    {file = "langsmith-0.0.79.tar.gz", hash = "sha256:d32639ccd18a92533b302f6f482255619afc8eb007fff91e37ee699d947c5e29"},
 ]
 
 [package.dependencies]
