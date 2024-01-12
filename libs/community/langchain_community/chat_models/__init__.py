@@ -43,6 +43,7 @@ from langchain_community.chat_models.minimax import MiniMaxChat
 from langchain_community.chat_models.mlflow import ChatMlflow
 from langchain_community.chat_models.mlflow_ai_gateway import ChatMLflowAIGateway
 from langchain_community.chat_models.ollama import ChatOllama
+from langchain_community.chat_models.ffm import ChatFFM
 from langchain_community.chat_models.openai import ChatOpenAI
 from langchain_community.chat_models.pai_eas_endpoint import PaiEasChatEndpoint
 from langchain_community.chat_models.promptlayer_openai import PromptLayerChatOpenAI

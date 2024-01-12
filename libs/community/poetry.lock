@@ -358,17 +358,6 @@ files = [
 feedparser = "*"
 
 [[package]]
-name = "asn1crypto"
-version = "1.5.1"
-description = "Fast ASN.1 parser and serializer with definitions for private keys, public keys, certificates, CRL, OCSP, CMS, PKCS#3, PKCS#7, PKCS#8, PKCS#12, PKCS#5, X.509 and TSP"
-optional = true
-python-versions = "*"
-files = [
-    {file = "asn1crypto-1.5.1-py2.py3-none-any.whl", hash = "sha256:db4e40728b728508912cbb3d44f19ce188f218e9eba635821bb4b68564f8fd67"},
-    {file = "asn1crypto-1.5.1.tar.gz", hash = "sha256:13ae38502be632115abf8a24cbe5f4da52e3b5231990aff31123c805306ccb9c"},
-]
-
-[[package]]
 name = "assemblyai"
 version = "0.17.0"
 description = "AssemblyAI Python SDK"
@@ -709,17 +698,17 @@ files = [
 
 [[package]]
 name = "boto3"
-version = "1.34.15"
+version = "1.34.16"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">= 3.8"
 files = [
-    {file = "boto3-1.34.15-py3-none-any.whl", hash = "sha256:f8f16c2d0ec1dca291857f1c138d5c30e01e40f653443cc2679e2f6ae71b05a6"},
-    {file = "boto3-1.34.15.tar.gz", hash = "sha256:2b74c58f475ff0dcf2f3637da9367a9465d29fad971ff5d8dc54ac39554e9022"},
+    {file = "boto3-1.34.16-py3-none-any.whl", hash = "sha256:23d2ad6111ab8b734b11f01bb158bea633b2901dcdd4f8e255154051d9138256"},
+    {file = "boto3-1.34.16.tar.gz", hash = "sha256:a316c87223f7f37b62af825524745ffb93f5b18580f3912acc39a1704d44ea43"},
 ]
 
 [package.dependencies]
-botocore = ">=1.34.15,<1.35.0"
+botocore = ">=1.34.16,<1.35.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.10.0,<0.11.0"
 
@@ -728,13 +717,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.34.15"
+version = "1.34.16"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">= 3.8"
 files = [
-    {file = "botocore-1.34.15-py3-none-any.whl", hash = "sha256:16bcf871e67ef0177593f06e9e5bae4db51c9a9a2e953cb14feeb42d53441a85"},
-    {file = "botocore-1.34.15.tar.gz", hash = "sha256:c3c3404962a6d9d5e1634bd70ed53b8eff1ff17ee9d7a6240e9e8c94db48ad6f"},
+    {file = "botocore-1.34.16-py3-none-any.whl", hash = "sha256:e59f3340673abd31e042b494a4bca96e55d232f7d3f8222a40a6273515e25891"},
+    {file = "botocore-1.34.16.tar.gz", hash = "sha256:94697602998dced2ce63321a3dbb2e3ddd477721b376cde41fcca9d3ef069037"},
 ]
 
 [package.dependencies]
@@ -747,17 +736,6 @@ urllib3 = [
 
 [package.extras]
 crt = ["awscrt (==0.19.19)"]
-
-[[package]]
-name = "cached-property"
-version = "1.5.2"
-description = "A decorator for caching properties in classes."
-optional = true
-python-versions = "*"
-files = [
-    {file = "cached-property-1.5.2.tar.gz", hash = "sha256:9fa5755838eecbb2d234c3aa390bd80fbd3ac6b6869109bfc1b499f7bd89a130"},
-    {file = "cached_property-1.5.2-py2.py3-none-any.whl", hash = "sha256:df4f613cf7ad9a588cc381aaf4a512d26265ecebd5eb9e1ba12f1319eb85a6a0"},
-]
 
 [[package]]
 name = "cachetools"
@@ -1122,13 +1100,13 @@ types = ["chardet (>=5.1.0)", "mypy", "pytest", "pytest-cov", "pytest-dependency
 
 [[package]]
 name = "cohere"
-version = "4.41"
+version = "4.42"
 description = "Python SDK for the Cohere API"
 optional = true
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "cohere-4.41-py3-none-any.whl", hash = "sha256:39470cc412fa96a1c612f522d48d7d86b34b3163a04030cff83ec48ebbaff32f"},
-    {file = "cohere-4.41.tar.gz", hash = "sha256:8509ca196dc038eca81e474d3cd5896da2ea168a4d3c578b4cb6969994be34ef"},
+    {file = "cohere-4.42-py3-none-any.whl", hash = "sha256:47f9355de0b7628314f461ca009fa3460c7edd9fd42d07cb5439321c05ae5ff9"},
+    {file = "cohere-4.42.tar.gz", hash = "sha256:8b1b93be118c5fb236d008df64abc0687cf88b77d1b589ac8cc8cd0d5dadb04b"},
 ]
 
 [package.dependencies]
@@ -2324,20 +2302,20 @@ smmap = ">=3.0.1,<6"
 
 [[package]]
 name = "gitpython"
-version = "3.1.40"
+version = "3.1.41"
 description = "GitPython is a Python library used to interact with Git repositories"
 optional = true
 python-versions = ">=3.7"
 files = [
-    {file = "GitPython-3.1.40-py3-none-any.whl", hash = "sha256:cf14627d5a8049ffbf49915732e5eddbe8134c3bdb9d476e6182b676fc573f8a"},
-    {file = "GitPython-3.1.40.tar.gz", hash = "sha256:22b126e9ffb671fdd0c129796343a02bf67bf2994b35449ffc9321aa755e18a4"},
+    {file = "GitPython-3.1.41-py3-none-any.whl", hash = "sha256:c36b6634d069b3f719610175020a9aed919421c87552185b085e04fbbdb10b7c"},
+    {file = "GitPython-3.1.41.tar.gz", hash = "sha256:ed66e624884f76df22c8e16066d567aaa5a37d5b5fa19db2c6df6f7156db9048"},
 ]
 
 [package.dependencies]
 gitdb = ">=4.0.1,<5"
 
 [package.extras]
-test = ["black", "coverage[toml]", "ddt (>=1.1.1,!=1.4.3)", "mock", "mypy", "pre-commit", "pytest", "pytest-cov", "pytest-instafail", "pytest-subtests", "pytest-sugar"]
+test = ["black", "coverage[toml]", "ddt (>=1.1.1,!=1.4.3)", "mock", "mypy", "pre-commit", "pytest (>=7.3.1)", "pytest-cov", "pytest-instafail", "pytest-mock", "pytest-sugar", "sumtypes"]
 
 [[package]]
 name = "google-api-core"
@@ -2389,13 +2367,13 @@ grpcio-gcp = ["grpcio-gcp (>=0.2.2,<1.0.dev0)"]
 
 [[package]]
 name = "google-auth"
-version = "2.26.1"
+version = "2.26.2"
 description = "Google Authentication Library"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "google-auth-2.26.1.tar.gz", hash = "sha256:54385acca5c0fbdda510cd8585ba6f3fcb06eeecf8a6ecca39d3ee148b092590"},
-    {file = "google_auth-2.26.1-py2.py3-none-any.whl", hash = "sha256:2c8b55e3e564f298122a02ab7b97458ccfcc5617840beb5d0ac757ada92c9780"},
+    {file = "google-auth-2.26.2.tar.gz", hash = "sha256:97327dbbf58cccb58fc5a1712bba403ae76668e64814eb30f7316f7e27126b81"},
+    {file = "google_auth-2.26.2-py2.py3-none-any.whl", hash = "sha256:3f445c8ce9b61ed6459aad86d8ccdba4a9afed841b2d1451a11ef4db08957424"},
 ]
 
 [package.dependencies]
@@ -3327,13 +3305,13 @@ files = [
 
 [[package]]
 name = "jinja2"
-version = "3.1.2"
+version = "3.1.3"
 description = "A very fast and expressive template engine."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "Jinja2-3.1.2-py3-none-any.whl", hash = "sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61"},
-    {file = "Jinja2-3.1.2.tar.gz", hash = "sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852"},
+    {file = "Jinja2-3.1.3-py3-none-any.whl", hash = "sha256:7d6d50dd97d52cbc355597bd845fabfbac3f551e1f99619e39a35ce8c370b5fa"},
+    {file = "Jinja2-3.1.3.tar.gz", hash = "sha256:ac8bd6544d4bb2c9792bf3a159e80bba8fda7f07e81bc3aed565432d5925ba90"},
 ]
 
 [package.dependencies]
@@ -3920,7 +3898,7 @@ files = [
 
 [[package]]
 name = "langchain-core"
-version = "0.1.5"
+version = "0.1.7"
 description = "Building applications with LLMs through composability"
 optional = false
 python-versions = ">=3.8.1,<4.0"
@@ -4086,13 +4064,13 @@ source = ["Cython (==0.29.37)"]
 
 [[package]]
 name = "markdown"
-version = "3.5.1"
+version = "3.5.2"
 description = "Python implementation of John Gruber's Markdown."
 optional = true
 python-versions = ">=3.8"
 files = [
-    {file = "Markdown-3.5.1-py3-none-any.whl", hash = "sha256:5874b47d4ee3f0b14d764324d2c94c03ea66bee56f2d929da9f2508d65e722dc"},
-    {file = "Markdown-3.5.1.tar.gz", hash = "sha256:b65d7beb248dc22f2e8a31fb706d93798093c308dc1aba295aedeb9d41a813bd"},
+    {file = "Markdown-3.5.2-py3-none-any.whl", hash = "sha256:d43323865d89fc0cb9b20c75fc8ad313af307cc087e84b657d9eec768eddeadd"},
+    {file = "Markdown-3.5.2.tar.gz", hash = "sha256:e1ac7b3dc550ee80e602e71c1d168002f062e49f1b11e26a36264dafd4df2ef8"},
 ]
 
 [package.dependencies]
@@ -4977,13 +4955,13 @@ signedtoken = ["cryptography (>=3.0.0)", "pyjwt (>=2.0.0,<3)"]
 
 [[package]]
 name = "oci"
-version = "2.118.1"
+version = "2.118.2"
 description = "Oracle Cloud Infrastructure Python SDK"
 optional = true
 python-versions = "*"
 files = [
-    {file = "oci-2.118.1-py3-none-any.whl", hash = "sha256:4404024e3a45c837f86a77845c5e4b09104ebd3c61d7a6ccf4155a14bc0ad42e"},
-    {file = "oci-2.118.1.tar.gz", hash = "sha256:ab77b235a397b720411b796f1377db6a572467f3f2a1fe696665de1234c6ad9b"},
+    {file = "oci-2.118.2-py3-none-any.whl", hash = "sha256:eb49d4363fffeff568b9036f503ed48d8e0d44711de033d750e79b6460f8cfda"},
+    {file = "oci-2.118.2.tar.gz", hash = "sha256:66c11462201640e9d8080d3e376687e744ab20dfa5d7695ffcf0cd80f28a6575"},
 ]
 
 [package.dependencies]
@@ -4992,7 +4970,6 @@ circuitbreaker = ">=1.3.1,<2.0.0"
 cryptography = ">=3.2.1,<42.0.0"
 pyOpenSSL = ">=17.5.0,<24.0.0"
 python-dateutil = ">=2.5.3,<3.0.0"
-python-pkcs11 = {version = "0.7.0", markers = "python_version >= \"3.7\" and platform_system != \"Windows\""}
 pytz = ">=2016.10"
 
 [[package]]
@@ -5054,13 +5031,13 @@ sympy = "*"
 
 [[package]]
 name = "openai"
-version = "1.7.0"
+version = "1.7.1"
 description = "The official Python library for the openai API"
 optional = false
 python-versions = ">=3.7.1"
 files = [
-    {file = "openai-1.7.0-py3-none-any.whl", hash = "sha256:2282e8e15acb05df79cccba330c025b8e84284c7ec1f3fa31f167a8479066333"},
-    {file = "openai-1.7.0.tar.gz", hash = "sha256:f2a8dcb739e8620c9318a2c6304ea72aebb572ba02fa1d586344405e80d567d3"},
+    {file = "openai-1.7.1-py3-none-any.whl", hash = "sha256:e52ad7ea015331edc584e6e9c98741c819d7ffbbd2ecc50bf1f55c33f9cb3f77"},
+    {file = "openai-1.7.1.tar.gz", hash = "sha256:7556e6aa30e20254b1ad68de49bb5ef4d8106bfac5e8a78abdc1daa911fbb1fb"},
 ]
 
 [package.dependencies]
@@ -6396,24 +6373,24 @@ image = ["Pillow (>=8.0.0)"]
 
 [[package]]
 name = "pypdfium2"
-version = "4.25.0"
+version = "4.26.0"
 description = "Python bindings to PDFium"
 optional = true
 python-versions = ">= 3.6"
 files = [
-    {file = "pypdfium2-4.25.0-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:25075d85834bf70a2244ce564063ee9aa2c738a019c09aeffa61920163892110"},
-    {file = "pypdfium2-4.25.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:ab46ac5e257b0610ca2bed7b5baf588b1417abe5bc36339ffdc651620dfe02f8"},
-    {file = "pypdfium2-4.25.0-py3-none-manylinux_2_17_aarch64.whl", hash = "sha256:7b5131374574d4f602346d1ef489362cc7fbd7a1920214e14efd5114c1915bf5"},
-    {file = "pypdfium2-4.25.0-py3-none-manylinux_2_17_armv7l.whl", hash = "sha256:20cb1d9fbd78595f0d0750a232f8204caa2f2aec34a1dde80ec5184f1efcf90d"},
-    {file = "pypdfium2-4.25.0-py3-none-manylinux_2_17_i686.whl", hash = "sha256:48ab21bed55bcb2cbce5c61363fc0f5481b26f5eb34b484fbea126c0d86f3697"},
-    {file = "pypdfium2-4.25.0-py3-none-manylinux_2_17_x86_64.whl", hash = "sha256:766730b0422347770189de5d3c7ff0c85620be12678d813fcce1122900b31c40"},
-    {file = "pypdfium2-4.25.0-py3-none-musllinux_1_1_aarch64.whl", hash = "sha256:485b404bd059a80a1bb0646647e2f0493f9240ca2c2672059d876b91c2e7e9f9"},
-    {file = "pypdfium2-4.25.0-py3-none-musllinux_1_1_i686.whl", hash = "sha256:f49234b882c5c3fd1936fa20db665d6667d45bcbefc8120565c600aa7287bda0"},
-    {file = "pypdfium2-4.25.0-py3-none-musllinux_1_1_x86_64.whl", hash = "sha256:b43a0206c2ac5dc812b6bdff2e74023a080f06ca847dd7905063f33ca385c655"},
-    {file = "pypdfium2-4.25.0-py3-none-win32.whl", hash = "sha256:23e693cceb0154a609838bf827a139a475eb532297d2c2b6cd4033b9bac73dad"},
-    {file = "pypdfium2-4.25.0-py3-none-win_amd64.whl", hash = "sha256:43f7612bc802518d67dacec11d1d0fb447c7371ce70cb2328f70ef71e9fe0582"},
-    {file = "pypdfium2-4.25.0-py3-none-win_arm64.whl", hash = "sha256:d05155f6a50b8025c0fe0a11a527d4f1716c09f06fa4e4d46f3798fd040e8b95"},
-    {file = "pypdfium2-4.25.0.tar.gz", hash = "sha256:1691bfa3e65bc84fd8b1d26a6d68af90f9662771a647dd6c4e031d81c4a72037"},
+    {file = "pypdfium2-4.26.0-py3-none-macosx_10_13_x86_64.whl", hash = "sha256:41c0e04f3701fa8bfd9d9b0a91c1eb6ea88b26b53fc47549ca007ee2dd298923"},
+    {file = "pypdfium2-4.26.0-py3-none-macosx_11_0_arm64.whl", hash = "sha256:a4199ba0f8dc559a2f3c27c85a925e818c02bf1c92d1afbeb6733f78c35d47e4"},
+    {file = "pypdfium2-4.26.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:f780160b0ca344e39a22264e5200a5ec2179a9b9221c31035f20df43078f3374"},
+    {file = "pypdfium2-4.26.0-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:53f712c325cbe63bf3d613b564920ba5b78c1b5b5be4117d5eb6cf03816abe8b"},
+    {file = "pypdfium2-4.26.0-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:00c7c4ab787642ecdab74c5c9a52833fba0611ff368a45368bf2706441101300"},
+    {file = "pypdfium2-4.26.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6b016be08b33f8759435c96c7ca6d096b6525bf2b2b7757b6998ec05b69c86e5"},
+    {file = "pypdfium2-4.26.0-py3-none-musllinux_1_1_aarch64.whl", hash = "sha256:b651e11bab53ec555521d9d1b59ab36a538db02c3a36f0f2137c21dab11466a4"},
+    {file = "pypdfium2-4.26.0-py3-none-musllinux_1_1_i686.whl", hash = "sha256:c8978ccbff218804be6ebb5a5db9e927caeefd7028076f766ad4acf01da85627"},
+    {file = "pypdfium2-4.26.0-py3-none-musllinux_1_1_x86_64.whl", hash = "sha256:61aa74b5c1e4472a8fdbdfc42ae396c4363d325c34aedcb2f3d93b6169b84613"},
+    {file = "pypdfium2-4.26.0-py3-none-win32.whl", hash = "sha256:19e09093f0c6ff7db75ed704a989517867e0f4c07eabb39e4dfcd2625e05f68d"},
+    {file = "pypdfium2-4.26.0-py3-none-win_amd64.whl", hash = "sha256:9b7582c3b881693f7f9ccab9ef383d1c1caf508cd03e14c593633596c8513c2f"},
+    {file = "pypdfium2-4.26.0-py3-none-win_arm64.whl", hash = "sha256:5ad2fc81e27579505719eefd25832ffb7c61d7c7c588f1259d33ba54b5bdfd7c"},
+    {file = "pypdfium2-4.26.0.tar.gz", hash = "sha256:25ee155f3e8bbee1e13ced4fa64a8a22f8304debe4364f32ac3c5356fd168131"},
 ]
 
 [[package]]
@@ -6682,20 +6659,6 @@ inflection = ">=0.2"
 jsonschema = ">=4.18"
 Markdown = ">=2.4"
 six = ">=1.5.2"
-
-[[package]]
-name = "python-pkcs11"
-version = "0.7.0"
-description = "PKCS#11 (Cryptoki) support for Python"
-optional = true
-python-versions = "*"
-files = [
-    {file = "python-pkcs11-0.7.0.tar.gz", hash = "sha256:9737e0c24cabb8bc9d48bf8c57c3df2a70f8cdd96b70c50290803286f9e46bf7"},
-]
-
-[package.dependencies]
-asn1crypto = "*"
-cached-property = "*"
 
 [[package]]
 name = "pytz"
@@ -8050,40 +8013,47 @@ files = [
 
 [[package]]
 name = "tiktoken"
-version = "0.3.3"
+version = "0.5.2"
 description = "tiktoken is a fast BPE tokeniser for use with OpenAI's models"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "tiktoken-0.3.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:d1f37fa75ba70c1bc7806641e8ccea1fba667d23e6341a1591ea333914c226a9"},
-    {file = "tiktoken-0.3.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:3d7296c38392a943c2ccc0b61323086b8550cef08dcf6855de9949890dbc1fd3"},
-    {file = "tiktoken-0.3.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3c84491965e139a905280ac28b74baaa13445b3678e07f96767089ad1ef5ee7b"},
-    {file = "tiktoken-0.3.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:65970d77ea85ce6c7fce45131da9258cd58a802ffb29ead8f5552e331c025b2b"},
-    {file = "tiktoken-0.3.3-cp310-cp310-musllinux_1_1_aarch64.whl", hash = "sha256:bd3f72d0ba7312c25c1652292121a24c8f1711207b63c6d8dab21afe4be0bf04"},
-    {file = "tiktoken-0.3.3-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:719c9e13432602dc496b24f13e3c3ad3ec0d2fbdb9aace84abfb95e9c3a425a4"},
-    {file = "tiktoken-0.3.3-cp310-cp310-win_amd64.whl", hash = "sha256:dc00772284c94e65045b984ed7e9f95d000034f6b2411df252011b069bd36217"},
-    {file = "tiktoken-0.3.3-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:4db2c40f79f8f7a21a9fdbf1c6dee32dea77b0d7402355dc584a3083251d2e15"},
-    {file = "tiktoken-0.3.3-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:e3c0f2231aa3829a1a431a882201dc27858634fd9989898e0f7d991dbc6bcc9d"},
-    {file = "tiktoken-0.3.3-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:48c13186a479de16cfa2c72bb0631fa9c518350a5b7569e4d77590f7fee96be9"},
-    {file = "tiktoken-0.3.3-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6674e4e37ab225020135cd66a392589623d5164c6456ba28cc27505abed10d9e"},
-    {file = "tiktoken-0.3.3-cp311-cp311-musllinux_1_1_aarch64.whl", hash = "sha256:4a0c1357f6191211c544f935d5aa3cb9d7abd118c8f3c7124196d5ecd029b4af"},
-    {file = "tiktoken-0.3.3-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:2e948d167fc3b04483cbc33426766fd742e7cefe5346cd62b0cbd7279ef59539"},
-    {file = "tiktoken-0.3.3-cp311-cp311-win_amd64.whl", hash = "sha256:5dca434c8680b987eacde2dbc449e9ea4526574dbf9f3d8938665f638095be82"},
-    {file = "tiktoken-0.3.3-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:984758ebc07cd8c557345697c234f1f221bd730b388f4340dd08dffa50213a01"},
-    {file = "tiktoken-0.3.3-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:891012f29e159a989541ae47259234fb29ff88c22e1097567316e27ad33a3734"},
-    {file = "tiktoken-0.3.3-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:210f8602228e4c5d706deeb389da5a152b214966a5aa558eec87b57a1969ced5"},
-    {file = "tiktoken-0.3.3-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:dd783564f80d4dc44ff0a64b13756ded8390ed2548549aefadbe156af9188307"},
-    {file = "tiktoken-0.3.3-cp38-cp38-musllinux_1_1_aarch64.whl", hash = "sha256:03f64bde9b4eb8338bf49c8532bfb4c3578f6a9a6979fc176d939f9e6f68b408"},
-    {file = "tiktoken-0.3.3-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:1ac369367b6f5e5bd80e8f9a7766ac2a9c65eda2aa856d5f3c556d924ff82986"},
-    {file = "tiktoken-0.3.3-cp38-cp38-win_amd64.whl", hash = "sha256:94600798891f78db780e5aa9321456cf355e54a4719fbd554147a628de1f163f"},
-    {file = "tiktoken-0.3.3-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:e59db6fca8d5ccea302fe2888917364446d6f4201a25272a1a1c44975c65406a"},
-    {file = "tiktoken-0.3.3-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:19340d8ba4d6fd729b2e3a096a547ded85f71012843008f97475f9db484869ee"},
-    {file = "tiktoken-0.3.3-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:542686cbc9225540e3a10f472f82fa2e1bebafce2233a211dee8459e95821cfd"},
-    {file = "tiktoken-0.3.3-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3a43612b2a09f4787c050163a216bf51123851859e9ab128ad03d2729826cde9"},
-    {file = "tiktoken-0.3.3-cp39-cp39-musllinux_1_1_aarch64.whl", hash = "sha256:a11674f0275fa75fb59941b703650998bd4acb295adbd16fc8af17051aaed19d"},
-    {file = "tiktoken-0.3.3-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:65fc0a449630bab28c30b4adec257442a4706d79cffc2337c1d9df3e91825cdd"},
-    {file = "tiktoken-0.3.3-cp39-cp39-win_amd64.whl", hash = "sha256:0b9a7a9a8b781a50ee9289e85e28771d7e113cc0c656eadfb6fc6d3a106ff9bb"},
-    {file = "tiktoken-0.3.3.tar.gz", hash = "sha256:97b58b7bfda945791ec855e53d166e8ec20c6378942b93851a6c919ddf9d0496"},
+    {file = "tiktoken-0.5.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:8c4e654282ef05ec1bd06ead22141a9a1687991cef2c6a81bdd1284301abc71d"},
+    {file = "tiktoken-0.5.2-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:7b3134aa24319f42c27718c6967f3c1916a38a715a0fa73d33717ba121231307"},
+    {file = "tiktoken-0.5.2-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:6092e6e77730929c8c6a51bb0d7cfdf1b72b63c4d033d6258d1f2ee81052e9e5"},
+    {file = "tiktoken-0.5.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:72ad8ae2a747622efae75837abba59be6c15a8f31b4ac3c6156bc56ec7a8e631"},
+    {file = "tiktoken-0.5.2-cp310-cp310-musllinux_1_1_aarch64.whl", hash = "sha256:51cba7c8711afa0b885445f0637f0fcc366740798c40b981f08c5f984e02c9d1"},
+    {file = "tiktoken-0.5.2-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:3d8c7d2c9313f8e92e987d585ee2ba0f7c40a0de84f4805b093b634f792124f5"},
+    {file = "tiktoken-0.5.2-cp310-cp310-win_amd64.whl", hash = "sha256:692eca18c5fd8d1e0dde767f895c17686faaa102f37640e884eecb6854e7cca7"},
+    {file = "tiktoken-0.5.2-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:138d173abbf1ec75863ad68ca289d4da30caa3245f3c8d4bfb274c4d629a2f77"},
+    {file = "tiktoken-0.5.2-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:7388fdd684690973fdc450b47dfd24d7f0cbe658f58a576169baef5ae4658607"},
+    {file = "tiktoken-0.5.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:a114391790113bcff670c70c24e166a841f7ea8f47ee2fe0e71e08b49d0bf2d4"},
+    {file = "tiktoken-0.5.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ca96f001e69f6859dd52926d950cfcc610480e920e576183497ab954e645e6ac"},
+    {file = "tiktoken-0.5.2-cp311-cp311-musllinux_1_1_aarch64.whl", hash = "sha256:15fed1dd88e30dfadcdd8e53a8927f04e1f6f81ad08a5ca824858a593ab476c7"},
+    {file = "tiktoken-0.5.2-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:93f8e692db5756f7ea8cb0cfca34638316dcf0841fb8469de8ed7f6a015ba0b0"},
+    {file = "tiktoken-0.5.2-cp311-cp311-win_amd64.whl", hash = "sha256:bcae1c4c92df2ffc4fe9f475bf8148dbb0ee2404743168bbeb9dcc4b79dc1fdd"},
+    {file = "tiktoken-0.5.2-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:b76a1e17d4eb4357d00f0622d9a48ffbb23401dcf36f9716d9bd9c8e79d421aa"},
+    {file = "tiktoken-0.5.2-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:01d8b171bb5df4035580bc26d4f5339a6fd58d06f069091899d4a798ea279d3e"},
+    {file = "tiktoken-0.5.2-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:42adf7d4fb1ed8de6e0ff2e794a6a15005f056a0d83d22d1d6755a39bffd9e7f"},
+    {file = "tiktoken-0.5.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4c3f894dbe0adb44609f3d532b8ea10820d61fdcb288b325a458dfc60fefb7db"},
+    {file = "tiktoken-0.5.2-cp312-cp312-musllinux_1_1_aarch64.whl", hash = "sha256:58ccfddb4e62f0df974e8f7e34a667981d9bb553a811256e617731bf1d007d19"},
+    {file = "tiktoken-0.5.2-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:58902a8bad2de4268c2a701f1c844d22bfa3cbcc485b10e8e3e28a050179330b"},
+    {file = "tiktoken-0.5.2-cp312-cp312-win_amd64.whl", hash = "sha256:5e39257826d0647fcac403d8fa0a474b30d02ec8ffc012cfaf13083e9b5e82c5"},
+    {file = "tiktoken-0.5.2-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:8bde3b0fbf09a23072d39c1ede0e0821f759b4fa254a5f00078909158e90ae1f"},
+    {file = "tiktoken-0.5.2-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:2ddee082dcf1231ccf3a591d234935e6acf3e82ee28521fe99af9630bc8d2a60"},
+    {file = "tiktoken-0.5.2-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:35c057a6a4e777b5966a7540481a75a31429fc1cb4c9da87b71c8b75b5143037"},
+    {file = "tiktoken-0.5.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4c4a049b87e28f1dc60509f8eb7790bc8d11f9a70d99b9dd18dfdd81a084ffe6"},
+    {file = "tiktoken-0.5.2-cp38-cp38-musllinux_1_1_aarch64.whl", hash = "sha256:5bf5ce759089f4f6521ea6ed89d8f988f7b396e9f4afb503b945f5c949c6bec2"},
+    {file = "tiktoken-0.5.2-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:0c964f554af1a96884e01188f480dad3fc224c4bbcf7af75d4b74c4b74ae0125"},
+    {file = "tiktoken-0.5.2-cp38-cp38-win_amd64.whl", hash = "sha256:368dd5726d2e8788e47ea04f32e20f72a2012a8a67af5b0b003d1e059f1d30a3"},
+    {file = "tiktoken-0.5.2-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:a2deef9115b8cd55536c0a02c0203512f8deb2447f41585e6d929a0b878a0dd2"},
+    {file = "tiktoken-0.5.2-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:2ed7d380195affbf886e2f8b92b14edfe13f4768ff5fc8de315adba5b773815e"},
+    {file = "tiktoken-0.5.2-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c76fce01309c8140ffe15eb34ded2bb94789614b7d1d09e206838fc173776a18"},
+    {file = "tiktoken-0.5.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:60a5654d6a2e2d152637dd9a880b4482267dfc8a86ccf3ab1cec31a8c76bfae8"},
+    {file = "tiktoken-0.5.2-cp39-cp39-musllinux_1_1_aarch64.whl", hash = "sha256:41d4d3228e051b779245a8ddd21d4336f8975563e92375662f42d05a19bdff41"},
+    {file = "tiktoken-0.5.2-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:a5c1cdec2c92fcde8c17a50814b525ae6a88e8e5b02030dc120b76e11db93f13"},
+    {file = "tiktoken-0.5.2-cp39-cp39-win_amd64.whl", hash = "sha256:84ddb36faedb448a50b246e13d1b6ee3437f60b7169b723a4b2abad75e914f3e"},
+    {file = "tiktoken-0.5.2.tar.gz", hash = "sha256:f54c581f134a8ea96ce2023ab221d4d4d81ab614efa0b2fbce926387deb56c80"},
 ]
 
 [package.dependencies]
@@ -9233,4 +9203,4 @@ extended-testing = ["aiosqlite", "aleph-alpha-client", "anthropic", "arxiv", "as
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<4.0"
-content-hash = "80c430372523e2338a7c7c64e397f042d8754e14fb0f4300d778ae9317c84654"
+content-hash = "3ebd7490b1b12032986ff21b3388565ccca1b0cf8c6838df2559da16559297e2"
