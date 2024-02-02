@@ -34,8 +34,10 @@ from langchain_core.messages import (
     BaseMessage,
     BaseMessageChunk,
     HumanMessage,
+    convert_to_messages,
     message_chunk_to_message,
 )
+from langchain_core.messages.ai import AIMessageChunk
 from langchain_core.outputs import (
     ChatGeneration,
     ChatGenerationChunk,
@@ -93,7 +95,7 @@ async def agenerate_from_stream(
             generation += chunk
 
     if generation is None:
-        print("No valid chunks found in the stream")
+        print("No valid chunks found in the stream.")
         return ChatResult(
             generations=[
                 ChatGeneration(
@@ -159,7 +161,7 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
         elif isinstance(input, str):
             return StringPromptValue(text=input)
         elif isinstance(input, Sequence):
-            return ChatPromptValue(messages=input)
+            return ChatPromptValue(messages=convert_to_messages(input))
         else:
             raise ValueError(
                 f"Invalid input type {type(input)}. "
@@ -311,7 +313,14 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
                         generation = chunk
                     else:
                         generation += chunk
-                assert generation is not None
+                if generation is None:
+                    msg = "No valid chunks found from server!"
+                    print(msg)
+                    generation = ChatGenerationChunk(
+                        text=msg,
+                        message=AIMessageChunk(content=msg)
+                    )
+                    yield generation.message
             except BaseException as e:
                 await run_manager.on_llm_error(
                     e,
@@ -322,7 +331,7 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
                 raise e
             else:
                 await run_manager.on_llm_end(
-                    LLMResult(generations=[[generation]]),
+                    response=LLMResult(generations=[[generation]]),
                 )
 
     # --- Custom methods ---

@@ -31,13 +31,13 @@ class GoogleSearchRun(BaseTool):
 class GoogleSearchResults(BaseTool):
     """Tool that queries the Google Search API and gets back json."""
 
-    name: str = "google_search_json"
+    name: str = "google_search_results_json"
     description: str = (
         "A wrapper around Google Search. "
         "Useful for when you need to answer questions about current events. "
         "Input should be a search query. Output is a JSON array of the query results"
     )
-    num_results: int = 5
+    num_results: int = 4
     api_wrapper: GoogleSearchAPIWrapper
 
     def _run(
