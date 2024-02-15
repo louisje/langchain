@@ -298,7 +298,7 @@ class _OllamaCommon(BaseLanguageModel):
                             "Ollama call failed with status code 404."
                         )
                     else:
-                        optional_detail = await response.json().get("error")
+                        optional_detail = await response.json().get("error")  # type: ignore[attr-defined]
                         raise ValueError(
                             f"Ollama call failed with status code {response.status}."
                             f" Details: {optional_detail}"
@@ -381,7 +381,7 @@ class Ollama(BaseLLM, _OllamaCommon):
         """Return type of llm."""
         return "ollama-llm"
 
-    def _generate(
+    def _generate(  # type: ignore[override]
         self,
         prompts: List[str],
         stop: Optional[List[str]] = None,
@@ -417,7 +417,7 @@ class Ollama(BaseLLM, _OllamaCommon):
             generations.append([final_chunk])
         return LLMResult(generations=generations)
 
-    async def _agenerate(
+    async def _agenerate(  # type: ignore[override]
         self,
         prompts: List[str],
         stop: Optional[List[str]] = None,
@@ -446,7 +446,7 @@ class Ollama(BaseLLM, _OllamaCommon):
                 prompt,
                 stop=stop,
                 images=images,
-                run_manager=run_manager,
+                run_manager=run_manager,  # type: ignore[arg-type]
                 verbose=self.verbose,
                 **kwargs,
             )
