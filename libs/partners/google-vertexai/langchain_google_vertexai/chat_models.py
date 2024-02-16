@@ -467,6 +467,8 @@ class ChatVertexAI(_VertexAICommon, BaseChatModel):
                 tools=tools,
                 safety_settings=safety_settings,
             )
+            for candidate in response.candidates:
+                print(candidate.__dict__) # DEBUG
             generations = [
                 ChatGeneration(
                     message=_parse_response_candidate(c),
