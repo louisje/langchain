@@ -1,18 +1,15 @@
 """Wrapper LLM conversation APIs."""
-
-from collections.abc import Generator
-
 from typing import Any, Dict, List, Mapping, Optional, Tuple, AsyncIterator, Union
 from pydantic import BaseModel, Field
+from langchain_core.language_models.base import BaseLanguageModel
 
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
 from langchain_core.messages import AIMessageChunk
 from langchain_core.language_models.chat_models import (
-    BaseChatModel,
+    SimpleChatModel,
     agenerate_from_stream,
 )
 
-from langchain.llms.base import BaseLLM
 from langchain.schema import (
     BaseMessage,
     ChatMessage,
@@ -29,11 +26,10 @@ from langchain.callbacks.manager import (
 
 import requests
 import json
-import os
 import re
 
 
-class BaseFormosaFoundationModel(BaseLLM):
+class BaseFormosaFoundationModel(BaseLanguageModel):
     base_url: str = "http://localhost:12345"
     """Base url the model is hosted under."""
 
@@ -86,10 +82,12 @@ class BaseFormosaFoundationModel(BaseLLM):
 
     def _call(
         self,
-        messages,
+        messages: List[BaseMessage],
         stop: Optional[List[str]] = None,
+        run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
-    ) -> str:
+    ):
+
         if self.stop is not None and stop is not None:
             raise ValueError("`stop` found in both the input and default params.")
         elif self.stop is not None:
@@ -99,7 +97,7 @@ class BaseFormosaFoundationModel(BaseLLM):
         params = {**self._default_params, "stop": stop, **kwargs}
         parameter_payload = {
             "parameters": params,
-            "messages": messages,
+            "messages": [self._convert_message_to_dict(m) for m in messages],
             "model": self.model,
         }
 
@@ -147,10 +145,11 @@ class BaseFormosaFoundationModel(BaseLLM):
 
     async def _acall(
         self,
-        messages,
+        messages: List[BaseMessage],
         stop: Optional[List[str]] = None,
+        run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
         **kwargs: Any,
-    ) -> Any:
+    ):
         if self.stop is not None and stop is not None:
             raise ValueError("`stop` found in both the input and default params.")
         elif self.stop is not None:
@@ -160,7 +159,7 @@ class BaseFormosaFoundationModel(BaseLLM):
         params = {**self._default_params, "stop": stop, **kwargs}
         parameter_payload = {
             "parameters": params,
-            "messages": messages,
+            "messages": [self._convert_message_to_dict(m) for m in messages],
             "model": self.model,
             "stream": True,
         }
@@ -190,14 +189,14 @@ class BaseFormosaFoundationModel(BaseLLM):
             for line in response.iter_lines():
                 if len(line) == 0:
                     continue
-                data = line.lstrip(b"data: ").decode("utf-8")
-                if data == "[DONE]":  # type: ignore
+                chunk: str = line.lstrip(b"data: ").decode("utf-8")
+                if chunk == "[DONE]":
                     break
-                if data == "event: ping" or not data:
+                if chunk == "event: ping" or not chunk:
                     continue
-                if re.search(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6}", data):
+                if re.search(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{6}", chunk):
                     continue
-                data = json.loads(data)  # type: ignore
+                data: dict[str, str] = json.loads(chunk)
                 if (
                     "generated_text" not in data
                     or data["generated_text"] is None
@@ -210,25 +209,6 @@ class BaseFormosaFoundationModel(BaseLLM):
             raise ValueError(
                 f"FormosaFoundationModel error raised by inference endpoint: {e}\n"
             )
-
-
-class ChatFFM(BaseChatModel, BaseFormosaFoundationModel):
-    """`FormosaFoundation` Chat large language models API.
-
-    The environment variable ``OPENAI_API_KEY`` set with your API key.
-
-    Example:
-        .. code-block:: python
-            ffm = ChatFFM(model="meta-llama2-70b-chat")
-    """
-
-    @property
-    def _llm_type(self) -> str:
-        return "FFM-chat"
-
-    @property
-    def lc_serializable(self) -> bool:
-        return True
 
     def _convert_message_to_dict(self, message: BaseMessage) -> dict:
         if isinstance(message, ChatMessage):
@@ -248,6 +228,26 @@ class ChatFFM(BaseChatModel, BaseFormosaFoundationModel):
             raise ValueError(f"Got unknown type {message}")
         return message_dict
 
+
+
+class ChatFFM(BaseFormosaFoundationModel, SimpleChatModel):
+    """`FormosaFoundation` Chat large language models API.
+
+    The environment variable ``OPENAI_API_KEY`` set with your API key.
+
+    Example:
+        .. code-block:: python
+            ffm = ChatFFM(model="meta-llama2-70b-chat")
+    """
+
+    @property
+    def _llm_type(self) -> str:
+        return "FFM-chat"
+
+    @property
+    def lc_serializable(self) -> bool:
+        return True
+
     def _create_conversation_messages(
         self, messages: List[BaseMessage], stop: Optional[List[str]]
     ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
@@ -265,7 +265,7 @@ class ChatFFM(BaseChatModel, BaseFormosaFoundationModel):
         if not isinstance(response, dict):
             response = response.dict()
         generation = ChatGeneration(
-            message=AIMessage(content=response.get("generated_text")),
+            message=AIMessage(content=response.get("generated_text", "")),
             generation_info=dict(finish_reason=response.get("finish_reason")),
         )
         llm_output = {
@@ -274,15 +274,6 @@ class ChatFFM(BaseChatModel, BaseFormosaFoundationModel):
             "system_fingerprint": response.get("system_fingerprint", ""),
         }
         return ChatResult(generations=[generation], llm_output=llm_output)
-
-    def _generate(
-        self,
-        messages: List[BaseMessage],
-        stop: Optional[List[str]] = None,
-        run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
-        **kwargs: Any,
-    ) -> ChatResult:
-        pass
 
     async def _astream(
         self,
@@ -294,7 +285,7 @@ class ChatFFM(BaseChatModel, BaseFormosaFoundationModel):
         message_dicts, params = self._create_message_dicts(messages, stop)
         params = {**params, **kwargs}
         print(message_dicts)  # Qoo
-        async for chunk in self._acall(messages=message_dicts, stop=stop, **params):
+        async for chunk in self._acall(messages=messages, stop=stop, **params):
             if not isinstance(chunk, dict):
                 chunk = chunk.dict()
             ai_message_chunk = AIMessageChunk(content=chunk["generated_text"])
@@ -327,10 +318,10 @@ class ChatFFM(BaseChatModel, BaseFormosaFoundationModel):
         message_dicts, params = self._create_message_dicts(messages, stop)
         print(json.dumps(message_dicts))  # Qoo
         params = {**params, **kwargs}
-        response = self._call(messages=message_dicts, stop=stop, **params)
+        response = self._call(messages=messages, stop=stop, **params)
         print(json.dumps(response))  # Qoo
         if type(response) is str:  # response is not the format of dictionary
-            return response
+            return ChatResult(generations=[ChatGeneration(message=AIMessage(content=response))])
         return self._create_chat_result(response)
 
     def _create_message_dicts(

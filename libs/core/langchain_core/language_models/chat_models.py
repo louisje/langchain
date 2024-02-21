@@ -14,6 +14,7 @@ from typing import (
     Optional,
     Sequence,
     cast,
+    Union
 )
 
 from langchain_core._api import deprecated
@@ -100,7 +101,7 @@ async def agenerate_from_stream(
             generations=[
                 ChatGeneration(
                     message=message_chunk_to_message(
-                        AIMessage(content="[[ Empty reponse from server! ]]")
+                        AIMessageChunk(content="[[ Empty reponse from server! ]]")
                     )
                 )
             ]
@@ -645,7 +646,7 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
         else:
             llm_string = self._get_llm_string(stop=stop, **kwargs)
             prompt = dumps(messages)
-            cache_val = await llm_cache.alookup(prompt, llm_string)
+            cache_val: Union[ChatResult, List[ChatGeneration]] = await llm_cache.alookup(prompt, llm_string)
             if isinstance(cache_val, list):
                 return ChatResult(generations=cache_val)
             else:

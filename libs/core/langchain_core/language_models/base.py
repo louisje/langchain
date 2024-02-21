@@ -69,7 +69,7 @@ class BaseLanguageModel(
     """
 
     @property
-    def InputType(self) -> TypeAlias:
+    def InputType(self):
         """Get the input type for this runnable."""
         from langchain_core.prompt_values import (
             ChatPromptValueConcrete,
