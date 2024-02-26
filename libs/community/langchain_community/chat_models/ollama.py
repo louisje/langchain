@@ -1,6 +1,8 @@
 import json
 from typing import Any, AsyncIterator, Dict, Iterator, List, Optional, Union, cast
 
+from langchain_experimental.llms.ollama_functions import DEFAULT_RESPONSE_FUNCTION, OllamaFunctions
+
 from langchain_core._api import deprecated
 from langchain_core.callbacks import (
     AsyncCallbackManagerForLLMRun,
@@ -17,8 +19,9 @@ from langchain_core.messages import (
     FunctionMessage,
 )
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
+from langchain_core.prompts.chat import SystemMessagePromptTemplate
 
-from langchain_community.llms.ollama import OllamaEndpointNotFoundError, _OllamaCommon
+from langchain_community.llms.ollama import Ollama, OllamaEndpointNotFoundError, _OllamaCommon
 
 
 @deprecated("0.0.3", alternative="_chat_stream_response_to_chat_generation_chunk")
@@ -48,7 +51,7 @@ def _chat_stream_response_to_chat_generation_chunk(
     )
 
 
-class ChatOllama(BaseChatModel, _OllamaCommon):
+class ChatOllama(Ollama, OllamaFunctions):
     """Ollama locally runs large language models.
 
     To use, follow the instructions at https://ollama.ai/.
@@ -119,7 +122,11 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
             content = ""
             images = []
             if isinstance(message, FunctionMessage):
-                content = f"After calling tool `{message.name}` we got：\n\n{message.content}"
+                tool_output = {
+                    "tool": message.name,
+                    "tool_output": message.content,
+                }
+                content = json.dumps(tool_output, indent=2)
             elif isinstance(message.content, str):
                 content = message.content
             else:
@@ -146,13 +153,16 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
                             "with a string 'image_url' field."
                         )
 
-            ollama_messages.append(
-                {
-                    "role": role,
-                    "content": content,
-                    "images": images,
-                }
-            )
+            if len(ollama_messages) > 0 and ollama_messages[-1].get("role") == role:
+                ollama_messages[-1]["content"] = content +"\n\n" + ollama_messages[-1]["content"]
+            else:
+                ollama_messages.append(
+                    {
+                        "role": role,
+                        "content": content,
+                        "images": images,
+                    }
+                )
 
         return ollama_messages
 
@@ -189,7 +199,7 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
         self,
         messages: List[BaseMessage],
         stop: Optional[List[str]] = None,
-        run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
+        run_manager: Optional[CallbackManagerForLLMRun] = None,
         verbose: bool = False,
         **kwargs: Any,
     ) -> ChatGenerationChunk:
@@ -230,10 +240,10 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
                     final_chunk += chunk
                 if run_manager:
                     await run_manager.on_llm_new_token(
-                        chunk.text,
+                        token=chunk.text,
                         verbose=verbose,
+                        chunk=chunk,
                     )
-        print(final_chunk) # Qoo
         if final_chunk is None:
             raise ValueError("No data received from Ollama stream.")
 
@@ -262,6 +272,28 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
                     HumanMessage(content="Tell me about the history of AI")
                 ])
         """
+        functions = kwargs.get("functions", [])
+        if "function_call" in kwargs:
+            functions = [
+                fn for fn in functions if fn["name"] == kwargs["function_call"]["name"]
+            ]
+            if not functions:
+                raise ValueError(
+                    'If "function_call" is specified, you must also pass a matching function in "functions".'
+                )
+            del kwargs["function_call"]
+        elif not functions:
+            functions.append(DEFAULT_RESPONSE_FUNCTION)
+        system_message_prompt_template = SystemMessagePromptTemplate.from_template(
+            self.tool_system_prompt_template
+        )
+        system_message = system_message_prompt_template.format(
+            tools=json.dumps(functions, indent=2)
+        )
+        if "functions" in kwargs:
+            del kwargs["functions"]
+
+        messages = [system_message] + messages
 
         final_chunk = self._chat_stream_with_aggregation(
             messages,
@@ -270,11 +302,52 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
             verbose=self.verbose,
             **kwargs,
         )
-        chat_generation = ChatGeneration(
-            message=AIMessage(content=final_chunk.text),
-            generation_info=final_chunk.generation_info,
+
+        chat_generation_content = final_chunk.text
+        if not isinstance(chat_generation_content, str):
+            raise ValueError("OllamaFunctions does not support non-string output.")
+        try:
+            parsed_chat_result = json.loads(chat_generation_content)
+        except json.JSONDecodeError:
+            raise ValueError(
+                f'"{self.model}" did not respond with valid JSON. Please try again.'
+            )
+        called_tool_name = parsed_chat_result["tool"]
+        called_tool_arguments = parsed_chat_result["tool_input"]
+        called_tool = next(
+            (fn for fn in functions if fn["name"] == called_tool_name), None
         )
-        return ChatResult(generations=[chat_generation])
+        if called_tool is None:
+            raise ValueError(
+                f"Failed to parse a function call from {self.model} output: {chat_generation_content}"
+            )
+        if called_tool["name"] == DEFAULT_RESPONSE_FUNCTION["name"]:
+            return ChatResult(
+                generations=[
+                    ChatGeneration(
+                        message=AIMessage(
+                            content=called_tool_arguments["response"],
+                        )
+                    )
+                ]
+            )
+
+        response_message_with_functions = AIMessage(
+            content="",
+            additional_kwargs={
+                "function_call": {
+                    "name": called_tool_name,
+                    "arguments": json.dumps(called_tool_arguments)
+                    if called_tool_arguments
+                    else "",
+                },
+            },
+        )
+
+        return ChatResult(
+            generations=[ChatGeneration(message=response_message_with_functions)]
+        )
+
 
     async def _agenerate(
         self,
@@ -326,8 +399,9 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
                     chunk = _chat_stream_response_to_chat_generation_chunk(stream_resp)
                     if run_manager:
                         run_manager.on_llm_new_token(
-                            chunk.text,
+                            token=chunk.text,
                             verbose=self.verbose,
+                            chunk=chunk,
                         )
                     yield chunk
         except OllamaEndpointNotFoundError:
@@ -340,13 +414,52 @@ class ChatOllama(BaseChatModel, _OllamaCommon):
         run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> AsyncIterator[ChatGenerationChunk]:
+        """Call out to Ollama's generate endpoint.
+
+        Args:
+            messages: The list of base messages to pass into the model.
+            stop: Optional list of stop words to use when generating.
+
+        Returns:
+            Chat generations from the model
+
+        Example:
+            .. code-block:: python
+
+                response = ollama([
+                    HumanMessage(content="Tell me about the history of AI")
+                ])
+        """
+        functions = kwargs.get("functions", [])
+        if functions:
+            if "function_call" in kwargs:
+                functions = [
+                    fn for fn in functions if fn["name"] == kwargs["function_call"]["name"]
+                ]
+                if not functions:
+                    raise ValueError(
+                        'If "function_call" is specified, you must also pass a matching function in "functions".'
+                    )
+                del kwargs["function_call"]
+            system_message_prompt_template = SystemMessagePromptTemplate.from_template(
+                self.tool_system_prompt_template
+            )
+            system_message = system_message_prompt_template.format(
+                tools=json.dumps(functions, indent=2),
+                default_response_function=json.dumps(DEFAULT_RESPONSE_FUNCTION, indent=2),
+            )
+            if "functions" in kwargs:
+                del kwargs["functions"]
+            messages = [system_message] + messages
+
         async for stream_resp in self._acreate_chat_stream(messages, stop, **kwargs):
             if stream_resp:
                 chunk = _chat_stream_response_to_chat_generation_chunk(stream_resp)
                 if run_manager:
                     await run_manager.on_llm_new_token(
-                        chunk.text,
+                        token=chunk.text,
                         verbose=self.verbose,
+                        chunk=chunk,
                     )
                 yield chunk
 

@@ -46,6 +46,7 @@ from langchain_core.outputs import (
     LLMResult,
     RunInfo,
 )
+from langchain_core.outputs.generation import Generation
 from langchain_core.prompt_values import ChatPromptValue, PromptValue, StringPromptValue
 from langchain_core.pydantic_v1 import Field, root_validator
 from langchain_core.runnables.config import ensure_config, run_in_executor
@@ -528,7 +529,7 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
                     *[
                         run_manager.on_llm_end(
                             LLMResult(
-                                generations=[res.generations], llm_output=res.llm_output
+                                generations=[res.generations], llm_output=res.llm_output # type: ignore
                             )
                         )
                         for run_manager, res in zip(run_managers, results)
@@ -537,12 +538,12 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
                 )
             raise exceptions[0]
         flattened_outputs = [
-            LLMResult(generations=[res.generations], llm_output=res.llm_output)
+            LLMResult(generations=[res.generations], llm_output=res.llm_output) # type: ignore
             for res in results
         ]
-        llm_output = self._combine_llm_outputs([res.llm_output for res in results])
-        generations = [res.generations for res in results]
-        output = LLMResult(generations=generations, llm_output=llm_output)
+        llm_output = self._combine_llm_outputs([res.llm_output for res in results]) # type: ignore
+        generations = [res.generations for res in results] # type: ignore
+        output = LLMResult(generations=generations, llm_output=llm_output) # type: ignore
         await asyncio.gather(
             *[
                 run_manager.on_llm_end(flattened_output)
@@ -608,7 +609,7 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
             prompt = dumps(messages)
             cache_val = llm_cache.lookup(prompt, llm_string)
             if isinstance(cache_val, list):
-                return ChatResult(generations=cache_val)
+                return ChatResult(generations=cache_val) # type: ignore
             else:
                 if new_arg_supported:
                     result = self._generate(
@@ -646,7 +647,7 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
         else:
             llm_string = self._get_llm_string(stop=stop, **kwargs)
             prompt = dumps(messages)
-            cache_val: Union[ChatResult, List[ChatGeneration]] = await llm_cache.alookup(prompt, llm_string)
+            cache_val: Union[ChatResult, List[ChatGeneration]] = await llm_cache.alookup(prompt, llm_string) # type: ignore
             if isinstance(cache_val, list):
                 return ChatResult(generations=cache_val)
             else:

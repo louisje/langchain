@@ -1,7 +1,6 @@
 import json
 from typing import Any, Dict, List, Optional
 
-from langchain_community.chat_models.ollama import ChatOllama
 from langchain_core.callbacks import CallbackManagerForLLMRun
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage
@@ -10,16 +9,26 @@ from langchain_core.prompts import SystemMessagePromptTemplate
 
 from langchain_experimental.pydantic_v1 import root_validator
 
-DEFAULT_SYSTEM_TEMPLATE = """You have access to the following tools:
+DEFAULT_SYSTEM_TEMPLATE = """
+Answering my question, you can select one of the following tools:
 
 {tools}
 
-You must always select one of the above tools and respond with only a JSON object matching the following schema:
+By accessing tools, you must always select one of the above tools and respond with ONLY a JSON object (without any description) matching the following schema:
 
 {{
   "tool": <name of the selected tool>,
   "tool_input": <parameters for the selected tool, matching the tool's JSON schema>
 }}
+
+After that, the tool will be called with the given parameters and I will response you the tool output in the following schema:
+
+{{
+  "tool": <name of the tool selected>,
+  "tool_output": <output from the selected tool in the given input parameters>
+}}
+
+Please answer my question according to `tool_output`.
 """  # noqa: E501
 
 
@@ -42,22 +51,16 @@ DEFAULT_RESPONSE_FUNCTION = {
 
 
 class OllamaFunctions(BaseChatModel):
-    llm: ChatOllama
 
-    tool_system_prompt_template: str
+    model: str
+    tool_system_prompt_template: str = DEFAULT_SYSTEM_TEMPLATE
 
     @root_validator(pre=True)
     def validate_environment(cls, values: Dict) -> Dict:
-        values["llm"] = values.get("llm") or ChatOllama(**values, format="json")
         values["tool_system_prompt_template"] = (
             values.get("tool_system_prompt_template") or DEFAULT_SYSTEM_TEMPLATE
         )
         return values
-
-    @property
-    def model(self) -> BaseChatModel:
-        """For backwards compatibility."""
-        return self.llm
 
     def _generate(
         self,
@@ -73,8 +76,7 @@ class OllamaFunctions(BaseChatModel):
             ]
             if not functions:
                 raise ValueError(
-                    'If "function_call" is specified, you must also pass a matching \
-function in "functions".'
+                    'If "function_call" is specified, you must also pass a matching function in "functions".'
                 )
             del kwargs["function_call"]
         elif not functions:
@@ -87,7 +89,7 @@ function in "functions".'
         )
         if "functions" in kwargs:
             del kwargs["functions"]
-        response_message = self.llm.predict_messages(
+        response_message = self.predict_messages(
             [system_message] + messages, stop=stop, callbacks=run_manager, **kwargs
         )
         chat_generation_content = response_message.content
@@ -97,7 +99,7 @@ function in "functions".'
             parsed_chat_result = json.loads(chat_generation_content)
         except json.JSONDecodeError:
             raise ValueError(
-                f'"{self.llm.model}" did not respond with valid JSON. Please try again.'
+                f'"{self.model}" did not respond with valid JSON. Please try again.'
             )
         called_tool_name = parsed_chat_result["tool"]
         called_tool_arguments = parsed_chat_result["tool_input"]
@@ -106,8 +108,7 @@ function in "functions".'
         )
         if called_tool is None:
             raise ValueError(
-                f"Failed to parse a function call from {self.llm.model} \
-output: {chat_generation_content}"
+                f"Failed to parse a function call from {self.model} output: {chat_generation_content}"
             )
         if called_tool["name"] == DEFAULT_RESPONSE_FUNCTION["name"]:
             return ChatResult(

@@ -195,7 +195,7 @@ async def aupdate_cache(
     return llm_output
 
 
-class BaseLLM(BaseLanguageModel[str], ABC):
+class BaseLLM(BaseLanguageModel, ABC):
     """Base LLM abstract interface.
 
     It should take in a prompt and return a string."""

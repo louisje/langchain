@@ -6,6 +6,7 @@ from langchain_core.language_models.base import BaseLanguageModel
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
 from langchain_core.messages import AIMessageChunk
 from langchain_core.language_models.chat_models import (
+    BaseChatModel,
     SimpleChatModel,
     agenerate_from_stream,
 )
@@ -147,7 +148,6 @@ class BaseFormosaFoundationModel(BaseLanguageModel):
         self,
         messages: List[BaseMessage],
         stop: Optional[List[str]] = None,
-        run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ):
         if self.stop is not None and stop is not None:
@@ -230,7 +230,7 @@ class BaseFormosaFoundationModel(BaseLanguageModel):
 
 
 
-class ChatFFM(BaseFormosaFoundationModel, SimpleChatModel):
+class ChatFFM(BaseFormosaFoundationModel, BaseChatModel):
     """`FormosaFoundation` Chat large language models API.
 
     The environment variable ``OPENAI_API_KEY`` set with your API key.
@@ -299,6 +299,16 @@ class ChatFFM(BaseFormosaFoundationModel, SimpleChatModel):
             yield chunk
             if run_manager:
                 await run_manager.on_llm_new_token(token=chunk.text, chunk=chunk)
+
+    def _generate(
+        self,
+        messages: List[BaseMessage],
+        stop: Optional[List[str]] = None,
+        run_manager: Optional[CallbackManagerForLLMRun] = None,
+        stream: Optional[bool] = None,
+        **kwargs: Any,
+    ):
+        raise NotImplementedError("This code block is not implemented yet.")
 
     async def _agenerate(
         self,

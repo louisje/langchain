@@ -8,6 +8,7 @@ from langchain_core.callbacks import (
     CallbackManagerForLLMRun,
 )
 from langchain_core.language_models import BaseLanguageModel
+from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.language_models.llms import BaseLLM
 from langchain_core.outputs import GenerationChunk, LLMResult
 from langchain_core.pydantic_v1 import Extra
@@ -281,7 +282,6 @@ class _OllamaCommon(BaseLanguageModel):
                 "images": payload.get("images", []),
                 **params,
             }
-
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 url=api_url,
@@ -298,7 +298,7 @@ class _OllamaCommon(BaseLanguageModel):
                             "Ollama call failed with status code 404."
                         )
                     else:
-                        optional_detail = await response.json().get("error")  # type: ignore[attr-defined]
+                        optional_detail = response.text
                         raise ValueError(
                             f"Ollama call failed with status code {response.status}."
                             f" Details: {optional_detail}"
@@ -359,7 +359,7 @@ class _OllamaCommon(BaseLanguageModel):
         return final_chunk
 
 
-class Ollama(BaseLLM, _OllamaCommon):
+class Ollama(BaseChatModel, _OllamaCommon):
     """Ollama locally runs large language models.
 
     To use, follow the instructions at https://ollama.ai/.
