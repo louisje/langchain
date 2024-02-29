@@ -9,31 +9,21 @@ from langchain_core.prompts import SystemMessagePromptTemplate
 
 from langchain_experimental.pydantic_v1 import root_validator
 
-DEFAULT_SYSTEM_TEMPLATE = """
-Answering my question, you can select one of the following tools:
+DEFAULT_SYSTEM_TEMPLATE = """You have access to the following tools:
 
 {tools}
 
-By accessing tools, you must always select one of the above tools and respond with ONLY a JSON object (without any description) matching the following schema:
+You must always select one of the above tools and respond with only a JSON object matching the following schema:
 
 {{
-  "tool": <name of the selected tool>,
+  "tool_name": <name of the selected tool>,
   "tool_input": <parameters for the selected tool, matching the tool's JSON schema>
 }}
-
-After that, the tool will be called with the given parameters and I will response you the tool output in the following schema:
-
-{{
-  "tool": <name of the tool selected>,
-  "tool_output": <output from the selected tool in the given input parameters>
-}}
-
-Please answer my question according to `tool_output`.
 """  # noqa: E501
 
 
 DEFAULT_RESPONSE_FUNCTION = {
-    "name": "__conversational_response",
+    "name": "_conversational_response_",
     "description": (
         "Respond conversationally if no other tools should be called for a given query."
     ),

@@ -1,5 +1,6 @@
 import json
 from typing import Any, AsyncIterator, Dict, Iterator, List, Optional, Union, cast
+from langchain_core.prompts.prompt import PromptTemplate
 
 from langchain_experimental.llms.ollama_functions import DEFAULT_RESPONSE_FUNCTION, OllamaFunctions
 
@@ -123,10 +124,11 @@ class ChatOllama(Ollama, OllamaFunctions):
             images = []
             if isinstance(message, FunctionMessage):
                 tool_output = {
-                    "tool": message.name,
+                    "tool_name": message.name,
                     "tool_output": message.content,
                 }
                 content = json.dumps(tool_output, indent=2)
+                print(content) # Qoo
             elif isinstance(message.content, str):
                 content = message.content
             else:
@@ -153,16 +155,13 @@ class ChatOllama(Ollama, OllamaFunctions):
                             "with a string 'image_url' field."
                         )
 
-            if len(ollama_messages) > 0 and ollama_messages[-1].get("role") == role:
-                ollama_messages[-1]["content"] = content +"\n\n" + ollama_messages[-1]["content"]
-            else:
-                ollama_messages.append(
-                    {
-                        "role": role,
-                        "content": content,
-                        "images": images,
-                    }
-                )
+            ollama_messages.append(
+                {
+                    "role": role,
+                    "content": content,
+                    "images": images,
+                }
+            )
 
         return ollama_messages
 
@@ -414,43 +413,15 @@ class ChatOllama(Ollama, OllamaFunctions):
         run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> AsyncIterator[ChatGenerationChunk]:
-        """Call out to Ollama's generate endpoint.
 
-        Args:
-            messages: The list of base messages to pass into the model.
-            stop: Optional list of stop words to use when generating.
-
-        Returns:
-            Chat generations from the model
-
-        Example:
-            .. code-block:: python
-
-                response = ollama([
-                    HumanMessage(content="Tell me about the history of AI")
-                ])
-        """
-        functions = kwargs.get("functions", [])
-        if functions:
-            if "function_call" in kwargs:
-                functions = [
-                    fn for fn in functions if fn["name"] == kwargs["function_call"]["name"]
-                ]
-                if not functions:
-                    raise ValueError(
-                        'If "function_call" is specified, you must also pass a matching function in "functions".'
-                    )
-                del kwargs["function_call"]
-            system_message_prompt_template = SystemMessagePromptTemplate.from_template(
-                self.tool_system_prompt_template
-            )
-            system_message = system_message_prompt_template.format(
-                tools=json.dumps(functions, indent=2),
-                default_response_function=json.dumps(DEFAULT_RESPONSE_FUNCTION, indent=2),
-            )
-            if "functions" in kwargs:
-                del kwargs["functions"]
-            messages = [system_message] + messages
+        if "functions" in kwargs:
+            functions = kwargs["functions"]
+            del kwargs["functions"]
+            last_message = messages.pop()
+            if isinstance(last_message, HumanMessage) and functions:
+                prompt_template = PromptTemplate.from_template(self.tool_system_prompt_template)
+                prompt = prompt_template.format(tools=json.dumps(functions + [DEFAULT_RESPONSE_FUNCTION], indent=2))
+                messages.append(HumanMessage(content=prompt+"\n\nHere is the question:\n\n"+str(last_message.content)))
 
         async for stream_resp in self._acreate_chat_stream(messages, stop, **kwargs):
             if stream_resp:
