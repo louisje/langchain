@@ -127,8 +127,14 @@ class ChatOllama(Ollama, OllamaFunctions):
                     "tool_name": message.name,
                     "tool_output": message.content,
                 }
-                content = json.dumps(tool_output, indent=2)
+                content = json.dumps(tool_output, indent=4)
                 print(content) # Qoo
+            elif isinstance(message, AIMessage) and not message.content and "function_call" in message.additional_kwargs:
+                function_call = {
+                    "name": message.additional_kwargs["function_call"]["name"],
+                    "arguments": message.additional_kwargs["function_call"]["arguments"],
+                }
+                content = json.dumps(function_call, indent=4)
             elif isinstance(message.content, str):
                 content = message.content
             else:
@@ -417,11 +423,11 @@ class ChatOllama(Ollama, OllamaFunctions):
         if "functions" in kwargs:
             functions = kwargs["functions"]
             del kwargs["functions"]
-            last_message = messages.pop()
-            if isinstance(last_message, HumanMessage) and functions:
+            if isinstance(messages[-1], HumanMessage) and functions:
+                last_message = messages.pop()
                 prompt_template = PromptTemplate.from_template(self.tool_system_prompt_template)
-                prompt = prompt_template.format(tools=json.dumps(functions + [DEFAULT_RESPONSE_FUNCTION], indent=2))
-                messages.append(HumanMessage(content=prompt+"\n\nHere is the question:\n\n"+str(last_message.content)))
+                prompt = prompt_template.format(tools=json.dumps(functions + [DEFAULT_RESPONSE_FUNCTION], indent=4))
+                messages.append(HumanMessage(content=prompt+"\n\nMy question is:\n\n"+str(last_message.content)+"\n\nLet's think step by step."))
 
         async for stream_resp in self._acreate_chat_stream(messages, stop, **kwargs):
             if stream_resp:

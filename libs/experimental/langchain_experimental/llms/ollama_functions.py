@@ -9,23 +9,37 @@ from langchain_core.prompts import SystemMessagePromptTemplate
 
 from langchain_experimental.pydantic_v1 import root_validator
 
-DEFAULT_SYSTEM_TEMPLATE = """You have access to the following tools:
+DEFAULT_SYSTEM_TEMPLATE = """To answer my question, you have select one of the following tools:
 
 {tools}
 
-You must always select one of the above tools and respond with only a JSON object matching the following schema:
+You MUST ALWAYS select one of the above tools and respond me with ONLY a JSON object matching the following json schema (without any other descriptions):
 
 {{
-  "tool_name": <name of the selected tool>,
-  "tool_input": <parameters for the selected tool, matching the tool's JSON schema>
+    "tool_name": <name of the selected tool>,
+    "tool_input": <parameters for the selected tool, matching the tool's JSON schema>
 }}
-"""  # noqa: E501
+
+Please provide only json part, no other text, so I can parse it easily.
+
+---
+
+Once I get your response, I'll give you the tool output in the following JSON schema:
+
+{{
+    "tool_name": <the name of the tool>,
+    "tool_output": <the result of running the selected tool on the provided input parameters>
+}}
+
+Then you can aswser my question according to `tool_output`.
+
+---"""  # noqa: E501
 
 
 DEFAULT_RESPONSE_FUNCTION = {
-    "name": "_conversational_response_",
+    "name": "__conversational_response__",
     "description": (
-        "Respond conversationally if no other tools should be called for a given query."
+        "Call this tool if no other tools should be called, instead of directly response to user."
     ),
     "parameters": {
         "type": "object",
@@ -75,7 +89,7 @@ class OllamaFunctions(BaseChatModel):
             self.tool_system_prompt_template
         )
         system_message = system_message_prompt_template.format(
-            tools=json.dumps(functions, indent=2)
+            tools=json.dumps(functions, indent=4)
         )
         if "functions" in kwargs:
             del kwargs["functions"]
