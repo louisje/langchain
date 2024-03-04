@@ -66,7 +66,7 @@ class _OllamaCommon(BaseLanguageModel):
     CPU cores your system has (as opposed to the logical number of cores)."""
 
     num_predict: Optional[int] = None
-    """Maximum number of tokens to predict when generating text. 
+    """Maximum number of tokens to predict when generating text.
     (Default: 128, -1 = infinite generation, -2 = fill context)"""
 
     repeat_last_n: Optional[int] = None
@@ -160,7 +160,7 @@ class _OllamaCommon(BaseLanguageModel):
         yield from self._create_stream(
             payload=payload,
             stop=stop,
-            api_url=f"{self.base_url}/api/generate/",
+            api_url=f"{self.base_url}/api/generate",
             **kwargs,
         )
 
@@ -175,7 +175,7 @@ class _OllamaCommon(BaseLanguageModel):
         async for item in self._acreate_stream(
             payload=payload,
             stop=stop,
-            api_url=f"{self.base_url}/api/generate/",
+            api_url=f"{self.base_url}/api/generate",
             **kwargs,
         ):
             yield item

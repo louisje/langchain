@@ -219,8 +219,8 @@ class ChatOllama(Ollama, OllamaFunctions):
                 if run_manager:
                     run_manager.on_llm_new_token(
                         token=chunk.text,
+                        chunk=chunk,
                         verbose=verbose,
-                        chuck=chunk,
                     )
         if final_chunk is None:
             raise ValueError("No data received from Ollama stream.")
@@ -246,8 +246,8 @@ class ChatOllama(Ollama, OllamaFunctions):
                 if run_manager:
                     await run_manager.on_llm_new_token(
                         token=chunk.text,
-                        verbose=verbose,
                         chunk=chunk,
+                        verbose=verbose,
                     )
         if final_chunk is None:
             raise ValueError("No data received from Ollama stream.")
@@ -405,8 +405,8 @@ class ChatOllama(Ollama, OllamaFunctions):
                     if run_manager:
                         run_manager.on_llm_new_token(
                             token=chunk.text,
-                            verbose=self.verbose,
                             chunk=chunk,
+                            verbose=self.verbose,
                         )
                     yield chunk
         except OllamaEndpointNotFoundError:
@@ -435,8 +435,8 @@ class ChatOllama(Ollama, OllamaFunctions):
                 if run_manager:
                     await run_manager.on_llm_new_token(
                         token=chunk.text,
-                        verbose=self.verbose,
                         chunk=chunk,
+                        verbose=self.verbose,
                     )
                 yield chunk
 
@@ -455,6 +455,7 @@ class ChatOllama(Ollama, OllamaFunctions):
                 if run_manager:
                     run_manager.on_llm_new_token(
                         chunk.text,
+                        chunk=chunk,
                         verbose=self.verbose,
                     )
                 yield chunk
