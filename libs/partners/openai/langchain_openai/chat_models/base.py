@@ -83,7 +83,7 @@ from langchain_openai.output_parsers import (
 logger = logging.getLogger(__name__)
 
 
-def _convert_dict_to_message(_dict: Mapping[str, Any]) -> BaseMessage:
+def _convert_dict_to_message(_dict: Mapping[str, str]) -> BaseMessage:
     """Convert a dictionary to a LangChain message.
 
     Args:
@@ -92,7 +92,7 @@ def _convert_dict_to_message(_dict: Mapping[str, Any]) -> BaseMessage:
     Returns:
         The LangChain message.
     """
-    role = _dict.get("role")
+    role = _dict["role"]
     if role == "user":
         return HumanMessage(content=_dict.get("content", ""))
     elif role == "assistant":
@@ -101,21 +101,21 @@ def _convert_dict_to_message(_dict: Mapping[str, Any]) -> BaseMessage:
         content = _dict.get("content", "") or ""
         additional_kwargs: Dict = {}
         if function_call := _dict.get("function_call"):
-            additional_kwargs["function_call"] = dict(function_call)
+            additional_kwargs["function_call"] = function_call
         if tool_calls := _dict.get("tool_calls"):
             additional_kwargs["tool_calls"] = tool_calls
         return AIMessage(content=content, additional_kwargs=additional_kwargs)
     elif role == "system":
         return SystemMessage(content=_dict.get("content", ""))
     elif role == "function":
-        return FunctionMessage(content=_dict.get("content", ""), name=_dict.get("name"))
+        return FunctionMessage(content=_dict.get("content", ""), name=_dict["name"])
     elif role == "tool":
         additional_kwargs = {}
         if "name" in _dict:
             additional_kwargs["name"] = _dict["name"]
         return ToolMessage(
             content=_dict.get("content", ""),
-            tool_call_id=_dict.get("tool_call_id"),
+            tool_call_id=_dict["tool_call_id"],
             additional_kwargs=additional_kwargs,
         )
     else:
@@ -776,7 +776,7 @@ class ChatOpenAI(BaseChatModel):
     @beta()
     def with_structured_output(
         self,
-        schema: _DictOrPydanticClass,
+        schema: _DictOrPydanticClass[Any],
         *,
         method: Literal["function_calling", "json_mode"] = "function_calling",
         return_type: Literal["parsed", "all"] = "parsed",
@@ -892,7 +892,7 @@ class ChatOpenAI(BaseChatModel):
             llm = self.bind_tools([schema], tool_choice=True)
             if is_pydantic_schema:
                 output_parser: OutputParserLike = PydanticToolsParser(
-                    tools=[schema], first_tool_only=True
+                    tools=[schema], first_tool_only=True # type: ignore
                 )
             else:
                 key_name = convert_to_openai_tool(schema)["function"]["name"]
@@ -902,7 +902,7 @@ class ChatOpenAI(BaseChatModel):
         elif method == "json_mode":
             llm = self.bind(response_format={"type": "json_object"})
             output_parser = (
-                PydanticOutputParser(pydantic_object=schema)
+                PydanticOutputParser(pydantic_object=schema) # type: ignore
                 if is_pydantic_schema
                 else JsonOutputParser()
             )

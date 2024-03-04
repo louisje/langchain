@@ -1,14 +1,15 @@
 """Wrapper LLM conversation APIs."""
-from typing import Any, Dict, List, Mapping, Optional, Tuple, AsyncIterator, Union
+from typing import Any, Dict, Iterator, List, Optional, Tuple, AsyncIterator, Union
 from pydantic import BaseModel, Field
 from langchain_core.language_models.base import BaseLanguageModel
+from langchain_core.messages.chat import ChatMessageChunk
 
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
 from langchain_core.messages import AIMessageChunk
 from langchain_core.language_models.chat_models import (
     BaseChatModel,
-    SimpleChatModel,
     agenerate_from_stream,
+    generate_from_stream
 )
 
 from langchain.schema import (
@@ -122,29 +123,29 @@ class BaseFormosaFoundationModel(BaseLanguageModel):
                     f"Details: {response.text}\n"
                 )
             response.encoding = "utf-8"
-            generated_text = response.json()
+            result = response.json()
 
         except requests.exceptions.RequestException as e:  # This is the correct syntax
             raise ValueError(
                 f"FormosaFoundationModel error raised by inference endpoint: {e}\n"
             )
 
-        if generated_text.get("detail", None) is not None:
-            detail = generated_text["detail"]
+        if result.get("detail", None) is not None:
+            detail = result["detail"]
             raise ValueError(
                 f"FormosaFoundationModel endpoint_url: {endpoint_url}\n"
                 f"error raised by inference API: {detail}\n"
             )
 
-        if generated_text.get("generated_text", None) is None:
+        if result.get("generated_text", None) is None:
             raise ValueError(
                 f"FormosaFoundationModel endpoint_url: {endpoint_url}\n"
-                f"Response format error: {generated_text}\n"
+                f"Response format error: {result}\n"
             )
+        print(result) # DEBUG
+        return result
 
-        return generated_text
-
-    async def _acall(
+    def _call_stream(
         self,
         messages: List[BaseMessage],
         stop: Optional[List[str]] = None,
@@ -190,6 +191,7 @@ class BaseFormosaFoundationModel(BaseLanguageModel):
                 if len(line) == 0:
                     continue
                 chunk: str = line.lstrip(b"data: ").decode("utf-8")
+                print(chunk) # DEBUG
                 if chunk == "[DONE]":
                     break
                 if chunk == "event: ping" or not chunk:
@@ -248,19 +250,6 @@ class ChatFFM(BaseFormosaFoundationModel, BaseChatModel):
     def lc_serializable(self) -> bool:
         return True
 
-    def _create_conversation_messages(
-        self, messages: List[BaseMessage], stop: Optional[List[str]]
-    ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
-        params: Dict[str, Any] = {**self._default_params}
-
-        if stop is not None:
-            if "stop" in params:
-                raise ValueError("`stop` found in both the input and default params.")
-            params["stop"] = stop
-
-        message_dicts = [self._convert_message_to_dict(m) for m in messages]
-        return message_dicts, params
-
     def _create_chat_result(self, response: Union[dict, BaseModel]) -> ChatResult:
         if not isinstance(response, dict):
             response = response.dict()
@@ -282,10 +271,12 @@ class ChatFFM(BaseFormosaFoundationModel, BaseChatModel):
         run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> AsyncIterator[ChatGenerationChunk]:
-        message_dicts, params = self._create_message_dicts(messages, stop)
-        params = {**params, **kwargs}
-        print(message_dicts)  # Qoo
-        async for chunk in self._acall(messages=messages, stop=stop, **params):
+        params = {**self._default_params, **kwargs}
+        if stop is not None:
+            if "stop" in params:
+                params["stop"] += stop
+            params["stop"] = stop
+        for chunk in self._call_stream(messages=messages, stop=stop, **params):
             if not isinstance(chunk, dict):
                 chunk = chunk.dict()
             ai_message_chunk = AIMessageChunk(content=chunk["generated_text"])
@@ -300,6 +291,33 @@ class ChatFFM(BaseFormosaFoundationModel, BaseChatModel):
             if run_manager:
                 await run_manager.on_llm_new_token(token=chunk.text, chunk=chunk)
 
+    def _stream(
+        self,
+        messages: List[BaseMessage],
+        stop: Optional[List[str]] = None,
+        run_manager: Optional[CallbackManagerForLLMRun] = None,
+        **kwargs: Any,
+    ) -> Iterator[ChatGenerationChunk]:
+        params = {**self._default_params, **kwargs}
+        if stop is not None:
+            if "stop" in params:
+                params["stop"] += stop
+            params["stop"] = stop
+        for chunk in self._call_stream(messages=messages, stop=stop, **params):
+            if not isinstance(chunk, dict):
+                chunk = chunk.dict()
+            ai_message_chunk = AIMessageChunk(content=chunk["generated_text"])
+            finish_reason = chunk.get("finish_reason")
+            generation_info = (
+                dict(finish_reason=finish_reason) if finish_reason is not None else None
+            )
+            chunk = ChatGenerationChunk(
+                message=ai_message_chunk, generation_info=generation_info
+            )
+            yield chunk
+            if run_manager:
+                run_manager.on_llm_new_token(token=chunk.text, chunk=chunk)
+
     def _generate(
         self,
         messages: List[BaseMessage],
@@ -307,8 +325,23 @@ class ChatFFM(BaseFormosaFoundationModel, BaseChatModel):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         stream: Optional[bool] = None,
         **kwargs: Any,
-    ):
-        raise NotImplementedError("This code block is not implemented yet.")
+    ) -> ChatResult:
+        should_stream = stream if stream is not None else self.streaming
+        if should_stream:
+            stream_iter = self._stream(
+                messages, stop=stop, run_manager=run_manager, **kwargs
+            )
+            return generate_from_stream(stream_iter)
+
+        params = {**self._default_params, **kwargs}
+        if stop is not None:
+            if "stop" in params:
+                params["stop"] += stop
+            params["stop"] = stop
+        response = self._call(messages=messages, stop=stop, **params)
+        if type(response) is str:  # response is not the format of dictionary
+            return ChatResult(generations=[ChatGeneration(message=AIMessage(content=response))])
+        return self._create_chat_result(response)
 
     async def _agenerate(
         self,
@@ -325,22 +358,12 @@ class ChatFFM(BaseFormosaFoundationModel, BaseChatModel):
             )
             return await agenerate_from_stream(stream_iter)
 
-        message_dicts, params = self._create_message_dicts(messages, stop)
-        print(json.dumps(message_dicts))  # Qoo
-        params = {**params, **kwargs}
+        params = {**self._default_params, **kwargs}
+        if stop is not None:
+            if "stop" in params:
+                params["stop"] += stop
+            params["stop"] = stop
         response = self._call(messages=messages, stop=stop, **params)
-        print(json.dumps(response))  # Qoo
         if type(response) is str:  # response is not the format of dictionary
             return ChatResult(generations=[ChatGeneration(message=AIMessage(content=response))])
         return self._create_chat_result(response)
-
-    def _create_message_dicts(
-        self, messages: List[BaseMessage], stop: Optional[List[str]]
-    ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
-        params = self._default_params
-        if stop is not None:
-            if "stop" in params:
-                raise ValueError("`stop` found in both the input and default params.")
-            params["stop"] = stop
-        message_dicts = [self._convert_message_to_dict(m) for m in messages]
-        return message_dicts, params

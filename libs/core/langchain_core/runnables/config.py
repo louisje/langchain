@@ -240,7 +240,7 @@ def merge_configs(*configs: Optional[RunnableConfig]) -> RunnableConfig:
                 }
             elif key == "callbacks":
                 base_callbacks = base.get("callbacks")
-                these_callbacks = config["callbacks"]
+                these_callbacks = config.get("callbacks")
                 # callbacks can be either None, list[handler] or manager
                 # so merging two callbacks values has 6 cases
                 if isinstance(these_callbacks, list):
@@ -496,5 +496,5 @@ async def run_in_executor(
         )
 
     return await asyncio.get_running_loop().run_in_executor(
-        executor_or_config, partial(func, **kwargs), *args
+        executor=executor_or_config, func=partial(func, **kwargs), *args
     )
