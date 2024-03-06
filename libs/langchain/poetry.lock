@@ -545,21 +545,6 @@ isodate = ">=0.6.1,<1.0.0"
 typing-extensions = ">=4.0.1"
 
 [[package]]
-name = "azure-ai-vision-imageanalysis"
-version = "1.0.0b1"
-description = "Microsoft Azure Ai Vision Imageanalysis Client Library for Python"
-optional = true
-python-versions = ">=3.8"
-files = [
-    {file = "azure-ai-vision-imageanalysis-1.0.0b1.tar.gz", hash = "sha256:26618154e6a7b3d02cb4b40ac2708182b0225a32bba4a5b81e9f63147f8970d2"},
-    {file = "azure_ai_vision_imageanalysis-1.0.0b1-py3-none-any.whl", hash = "sha256:56ec5fc1c3a1243ee1ad9cbe92cef303cb6c4f0ec8b7ee29ad42b733ccc5188a"},
-]
-
-[package.dependencies]
-azure-core = ">=1.29.5,<2.0.0"
-isodate = ">=0.6.1,<1.0.0"
-
-[[package]]
 name = "azure-cognitiveservices-speech"
 version = "1.32.1"
 description = "Microsoft Cognitive Services Speech SDK for Python"
@@ -3450,7 +3435,7 @@ files = [
 
 [[package]]
 name = "langchain-community"
-version = "0.0.22"
+version = "0.0.25"
 description = "Community contributed LangChain integrations."
 optional = false
 python-versions = ">=3.8.1,<4.0"
@@ -3478,7 +3463,7 @@ url = "../community"
 
 [[package]]
 name = "langchain-core"
-version = "0.1.26"
+version = "0.1.28"
 description = "Building applications with LLMs through composability"
 optional = false
 python-versions = ">=3.8.1,<4.0"
@@ -3504,7 +3489,7 @@ url = "../core"
 
 [[package]]
 name = "langchain-openai"
-version = "0.0.7"
+version = "0.0.8"
 description = "An integration package connecting OpenAI and LangChain"
 optional = false
 python-versions = ">=3.8.1,<4.0"
@@ -3513,13 +3498,31 @@ develop = true
 
 [package.dependencies]
 langchain-core = {path = "../../core", develop = true}
-numpy = "^1"
 openai = "^1.10.0"
 tiktoken = ">=0.5.2,<1"
 
 [package.source]
 type = "directory"
 url = "../partners/openai"
+
+[[package]]
+name = "langchain-text-splitters"
+version = "0.0.1"
+description = "LangChain text splitting utilities"
+optional = false
+python-versions = ">=3.8.1,<4.0"
+files = []
+develop = true
+
+[package.dependencies]
+langchain-core = "^0.1.28"
+
+[package.extras]
+extended-testing = ["lxml (>=5.1.0,<6.0.0)"]
+
+[package.source]
+type = "directory"
+url = "../text-splitters"
 
 [[package]]
 name = "langsmith"
@@ -9156,4 +9159,4 @@ text-helpers = ["chardet"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8.1,<4.0"
-content-hash = "5b094ed6cea8137f278cf878813d4b7b7920ef71b4bba8a35f0b514eb3a8893a"
+content-hash = "b36a2e98b7fb17bf71e37c774f9c83e5c6dc5e82728be6483d32d55d5c966170"
