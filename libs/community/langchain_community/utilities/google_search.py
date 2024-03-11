@@ -105,7 +105,8 @@ class GoogleSearchAPIWrapper(BaseModel):
         query: str,
         num_results: int,
         search_params: Optional[Dict[str, str]] = None,
-    ) -> List[Dict]:
+    ) -> List[dict[str, str]]:
+
         """Run query through GoogleSearch and return metadata.
 
         Args:

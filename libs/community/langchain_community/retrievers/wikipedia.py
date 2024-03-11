@@ -1,20 +1,24 @@
-from typing import List
+from pdb import run
+from typing import List, Optional
 
 from langchain_core.callbacks import CallbackManagerForRetrieverRun
 from langchain_core.documents import Document
-from langchain_core.retrievers import BaseRetriever
 
 from langchain_community.utilities.wikipedia import WikipediaAPIWrapper
+from langchain_core.tools import BaseTool
 
 
-class WikipediaRetriever(BaseRetriever, WikipediaAPIWrapper):
+class WikipediaRetriever(BaseTool, WikipediaAPIWrapper):
     """`Wikipedia API` retriever.
 
     It wraps load() to get_relevant_documents().
     It uses all WikipediaAPIWrapper arguments without any change.
     """
 
-    def _get_relevant_documents(
-        self, query: str, *, run_manager: CallbackManagerForRetrieverRun
+    name = "wikipedia"
+    description = "Search for a query on Wikipedia"
+
+    def _run(
+        self, query: str
     ) -> List[Document]:
         return self.load(query=query)

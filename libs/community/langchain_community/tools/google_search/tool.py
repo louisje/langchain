@@ -1,6 +1,8 @@
 """Tool for the Google search API."""
 
-from typing import Optional
+from ast import Dict
+import json
+from typing import Any, List, Optional
 
 from langchain_core.callbacks import CallbackManagerForToolRun
 from langchain_core.tools import BaseTool
@@ -31,7 +33,7 @@ class GoogleSearchRun(BaseTool):
 class GoogleSearchResults(BaseTool):
     """Tool that queries the Google Search API and gets back json."""
 
-    name: str = "google_search_results_json"
+    name: str = "google_search_results"
     description: str = (
         "A wrapper around Google Search. "
         "Useful for when you need to answer questions about current events. "
@@ -44,6 +46,7 @@ class GoogleSearchResults(BaseTool):
         self,
         query: str,
         run_manager: Optional[CallbackManagerForToolRun] = None,
-    ) -> str:
+    ) -> List[dict[str, str]]:
+
         """Use the tool."""
-        return str(self.api_wrapper.results(query, self.num_results))
+        return self.api_wrapper.results(query, self.num_results)

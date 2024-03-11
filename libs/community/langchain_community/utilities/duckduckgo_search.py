@@ -54,7 +54,7 @@ class DuckDuckGoSearchAPIWrapper(BaseModel):
                 backend=self.backend,
             )
             if ddgs_gen:
-                return [r for r in ddgs_gen]
+                return [r for r in ddgs_gen] # type: ignore
         return []
 
     def _ddgs_news(
@@ -72,7 +72,7 @@ class DuckDuckGoSearchAPIWrapper(BaseModel):
                 max_results=max_results or self.max_results,
             )
             if ddgs_gen:
-                return [r for r in ddgs_gen]
+                return [r for r in ddgs_gen] # type: ignore
         return []
 
     def run(self, query: str) -> str:
