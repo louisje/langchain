@@ -2,7 +2,6 @@
 from typing import Any, Dict, Iterator, List, Optional, Tuple, AsyncIterator, Union
 from pydantic import BaseModel, Field
 from langchain_core.language_models.base import BaseLanguageModel
-from langchain_core.messages.chat import ChatMessageChunk
 
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
 from langchain_core.messages import AIMessageChunk
@@ -158,12 +157,17 @@ class BaseFormosaFoundationModel(BaseLanguageModel):
         elif stop is None:
             stop = []
         params = {**self._default_params, "stop": stop, **kwargs}
+        if "functions" in kwargs:
+            functions = kwargs["functions"]
+        del kwargs["functions"]
         parameter_payload = {
             "parameters": params,
             "messages": [self._convert_message_to_dict(m) for m in messages],
             "model": self.model,
             "stream": True,
         }
+        if functions:
+            parameter_payload["functions"] = functions
 
         # HTTP headers for authorization
         headers = {
@@ -200,9 +204,11 @@ class BaseFormosaFoundationModel(BaseLanguageModel):
                     continue
                 data: dict[str, str] = json.loads(chunk)
                 if (
-                    "generated_text" not in data
-                    or data["generated_text"] is None
-                    or len(data["generated_text"]) == 0
+                    ("generated_text" not in data or data["generated_text"] is None or len(data["generated_text"]) == 0)
+
+                    and
+
+                    ("function_call" not in data or data["function_call"] is None or len(data["function_call"]) == 0)
                 ):
                     continue
                 yield data
@@ -279,17 +285,22 @@ class ChatFFM(BaseFormosaFoundationModel, BaseChatModel):
         for chunk in self._call_stream(messages=messages, stop=stop, **params):
             if not isinstance(chunk, dict):
                 chunk = chunk.dict()
-            ai_message_chunk = AIMessageChunk(content=chunk["generated_text"])
+            ai_message_chunk = AIMessageChunk(content=chunk["generated_text"], additional_kwargs=dict(function_call=chunk["function_call"]) if "function_call" in chunk else dict())
             finish_reason = chunk.get("finish_reason")
-            generation_info = (
-                dict(finish_reason=finish_reason) if finish_reason is not None else None
-            )
-            chunk = ChatGenerationChunk(
+            generation_info = ({
+                "finish_reason": finish_reason,
+                "prompt_tokens": chunk.get("prompt_tokens"),
+                "generated_tokens": chunk.get("total_tokens"),
+                "total_tokens": chunk.get("total_tokens"),
+            } if finish_reason is not None else None)
+            if finish_reason == "eos_token":
+                del ai_message_chunk.additional_kwargs["function_call"]
+            chat_chunk = ChatGenerationChunk(
                 message=ai_message_chunk, generation_info=generation_info
             )
-            yield chunk
+            yield chat_chunk
             if run_manager:
-                await run_manager.on_llm_new_token(token=chunk.text, chunk=chunk)
+                await run_manager.on_llm_new_token(token=chat_chunk.text, chunk=chat_chunk)
 
     def _stream(
         self,

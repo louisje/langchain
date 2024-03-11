@@ -317,12 +317,14 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
                         generation += chunk
                 if generation is None:
                     msg = "No valid chunks found from server!"
-                    print(msg)
+                    print(msg) # DEBUG
                     generation = ChatGenerationChunk(
                         text=msg,
                         message=AIMessageChunk(content=msg)
                     )
                     yield generation.message
+                else:
+                    print("GENERATION: ", generation) # DEBUG
             except BaseException as e:
                 await run_manager.on_llm_error(
                     e,
