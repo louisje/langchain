@@ -156,10 +156,11 @@ class BaseFormosaFoundationModel(BaseLanguageModel):
             stop = self.stop
         elif stop is None:
             stop = []
-        params = {**self._default_params, "stop": stop, **kwargs}
+        functions = None
         if "functions" in kwargs:
             functions = kwargs["functions"]
-        del kwargs["functions"]
+            del kwargs["functions"]
+        params = {**self._default_params, "stop": stop, **kwargs}
         parameter_payload = {
             "parameters": params,
             "messages": [self._convert_message_to_dict(m) for m in messages],
@@ -195,7 +196,6 @@ class BaseFormosaFoundationModel(BaseLanguageModel):
                 if len(line) == 0:
                     continue
                 chunk: str = line.lstrip(b"data: ").decode("utf-8")
-                print(chunk) # DEBUG
                 if chunk == "[DONE]":
                     break
                 if chunk == "event: ping" or not chunk:
@@ -229,8 +229,9 @@ class BaseFormosaFoundationModel(BaseLanguageModel):
             message_dict = {"role": "system", "content": message.content}
         elif isinstance(message, FunctionMessage):
             message_dict = {
-                "role": "human",
-                "content": f"呼叫工具`{message.name}`之後我們得到以下回覆：\n\n{message.content}",
+                "role": "function",
+                "name": message.name,
+                "content": isinstance(message.content, str) if message.content else json.dumps(message.content, ensure_ascii=False),
             }
         else:
             raise ValueError(f"Got unknown type {message}")
@@ -293,8 +294,6 @@ class ChatFFM(BaseFormosaFoundationModel, BaseChatModel):
                 "generated_tokens": chunk.get("total_tokens"),
                 "total_tokens": chunk.get("total_tokens"),
             } if finish_reason is not None else None)
-            if finish_reason == "eos_token":
-                del ai_message_chunk.additional_kwargs["function_call"]
             chat_chunk = ChatGenerationChunk(
                 message=ai_message_chunk, generation_info=generation_info
             )
