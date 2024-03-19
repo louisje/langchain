@@ -115,12 +115,12 @@ class BaseFormosaFoundationModel(BaseLanguageModel):
                 headers=headers,
                 data=json.dumps(parameter_payload, ensure_ascii=False).encode("utf8"),
             )
-            if response.status_code != 200:
-                raise ValueError(
-                    f"FormosaFoundationModel endpoint_url: {endpoint_url}\n"
-                    f"error raised with status code {response.status_code}\n"
-                    f"Details: {response.text}\n"
-                )
+            # if response.status_code != 200:
+            #     raise ValueError(
+            #         f"FormosaFoundationModel endpoint_url: {endpoint_url}\n"
+            #         f"error raised with status code {response.status_code}\n"
+            #         f"Details: {response.text}\n"
+            #     )
             response.encoding = "utf-8"
             result = response.json()
 
@@ -129,18 +129,18 @@ class BaseFormosaFoundationModel(BaseLanguageModel):
                 f"FormosaFoundationModel error raised by inference endpoint: {e}\n"
             )
 
-        if result.get("detail", None) is not None:
-            detail = result["detail"]
-            raise ValueError(
-                f"FormosaFoundationModel endpoint_url: {endpoint_url}\n"
-                f"error raised by inference API: {detail}\n"
-            )
+        # if result.get("detail", None) is not None:
+        #     detail = result["detail"]
+        #     raise ValueError(
+        #         f"FormosaFoundationModel endpoint_url: {endpoint_url}\n"
+        #         f"error raised by inference API: {detail}\n"
+        #     )
 
-        if result.get("generated_text", None) is None:
-            raise ValueError(
-                f"FormosaFoundationModel endpoint_url: {endpoint_url}\n"
-                f"Response format error: {result}\n"
-            )
+        # if result.get("generated_text", None) is None:
+        #     raise ValueError(
+        #         f"FormosaFoundationModel endpoint_url: {endpoint_url}\n"
+        #         f"Response format error: {result}\n"
+        #     )
         print(result) # DEBUG
         return result
 
@@ -196,6 +196,7 @@ class BaseFormosaFoundationModel(BaseLanguageModel):
                 if len(line) == 0:
                     continue
                 chunk: str = line.lstrip(b"data: ").decode("utf-8")
+                print(chunk) # DEBUG
                 if chunk == "[DONE]":
                     break
                 if chunk == "event: ping" or not chunk:
@@ -205,10 +206,10 @@ class BaseFormosaFoundationModel(BaseLanguageModel):
                 data: dict[str, str] = json.loads(chunk)
                 if (
                     ("generated_text" not in data or data["generated_text"] is None or len(data["generated_text"]) == 0)
-
                     and
-
                     ("function_call" not in data or data["function_call"] is None or len(data["function_call"]) == 0)
+                    and
+                    ("detail" not in data or data["detail"] is None or len(data["detail"]) == 0)
                 ):
                     continue
                 yield data
@@ -260,15 +261,30 @@ class ChatFFM(BaseFormosaFoundationModel, BaseChatModel):
     def _create_chat_result(self, response: Union[dict, BaseModel]) -> ChatResult:
         if not isinstance(response, dict):
             response = response.dict()
-        generation = ChatGeneration(
-            message=AIMessage(content=response.get("generated_text", "")),
-            generation_info=dict(finish_reason=response.get("finish_reason")),
-        )
-        llm_output = {
-            "token_usage": response.get("generated_tokens"),
-            "model_name": self.model,
-            "system_fingerprint": response.get("system_fingerprint", ""),
-        }
+        if "detail" in response:
+            generation = ChatGeneration(
+                message=AIMessage(content=f"{response['detail']}"),
+                generation_info=dict(finish_reason="error"),
+            )
+            llm_output = dict()
+        else:
+            generation = ChatGeneration(
+                message=AIMessage(
+                    content=response.get("generated_text", ""),
+                    additional_kwargs=dict(function_call=response["function_call"]) if "function_call" in response else dict()
+                ),
+                generation_info=dict(
+                    finish_reason=response.get("finish_reason"),
+                    prompt_tokens=response.get("prompt_tokens"),
+                    generated_tokens=response.get("total_tokens"),
+                    total_tokens=response.get("total_tokens"),
+                ),
+            )
+            llm_output = {
+                "token_usage": response.get("generated_tokens"),
+                "model_name": self.model,
+                "system_fingerprint": response.get("system_fingerprint", ""),
+            }
         return ChatResult(generations=[generation], llm_output=llm_output)
 
     async def _astream(
@@ -286,7 +302,10 @@ class ChatFFM(BaseFormosaFoundationModel, BaseChatModel):
         for chunk in self._call_stream(messages=messages, stop=stop, **params):
             if not isinstance(chunk, dict):
                 chunk = chunk.dict()
-            ai_message_chunk = AIMessageChunk(content=chunk["generated_text"], additional_kwargs=dict(function_call=chunk["function_call"]) if "function_call" in chunk else dict())
+            ai_message_chunk = AIMessageChunk(
+                content=chunk["generated_text"],
+                additional_kwargs=dict(function_call=chunk["function_call"]) if "function_call" in chunk else dict()
+            )
             finish_reason = chunk.get("finish_reason")
             generation_info = ({
                 "finish_reason": finish_reason,
@@ -316,11 +335,15 @@ class ChatFFM(BaseFormosaFoundationModel, BaseChatModel):
         for chunk in self._call_stream(messages=messages, stop=stop, **params):
             if not isinstance(chunk, dict):
                 chunk = chunk.dict()
-            ai_message_chunk = AIMessageChunk(content=chunk["generated_text"])
-            finish_reason = chunk.get("finish_reason")
-            generation_info = (
-                dict(finish_reason=finish_reason) if finish_reason is not None else None
-            )
+            if "detail" in chunk:
+                ai_message_chunk = AIMessageChunk(content=f"\n\n{chunk['status_code']}: {chunk['detail']}")
+                generation_info = dict(finish_reason="error")
+            else:
+                ai_message_chunk = AIMessageChunk(content=chunk["generated_text"])
+                finish_reason = chunk.get("finish_reason")
+                generation_info = (
+                    dict(finish_reason=finish_reason) if finish_reason is not None else None
+                )
             chunk = ChatGenerationChunk(
                 message=ai_message_chunk, generation_info=generation_info
             )
