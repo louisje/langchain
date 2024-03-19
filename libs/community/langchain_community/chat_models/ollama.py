@@ -64,8 +64,6 @@ class ChatOllama(Ollama, OllamaFunctions):
             ollama = ChatOllama(model="llama2")
     """
 
-    streaming: bool = False
-
     @property
     def _llm_type(self) -> str:
         """Return type of chat model."""
@@ -168,8 +166,20 @@ class ChatOllama(Ollama, OllamaFunctions):
                     "images": images,
                 }
             )
-
+        print(ollama_messages) # DEBUG
         return ollama_messages
+
+    def _create_chat_generation(
+        self,
+        messages: List[BaseMessage],
+        stop: Optional[List[str]] = None,
+        **kwargs: Any,
+    ):
+        _ollama_messages = self._convert_messages_to_ollama_messages(messages)
+        payload = {
+            "messages": _ollama_messages,
+        }
+        return self._create_chat(payload=payload, stop=stop, api_url=f"{self.base_url}/api/chat", **kwargs)
 
     def _create_chat_stream(
         self,
@@ -178,7 +188,6 @@ class ChatOllama(Ollama, OllamaFunctions):
         **kwargs: Any,
     ) -> Iterator[str]:
         _ollama_messages = self._convert_messages_to_ollama_messages(messages)
-        print(_ollama_messages) # Qoo
         payload = {
             "messages": _ollama_messages,
         }
@@ -287,71 +296,56 @@ class ChatOllama(Ollama, OllamaFunctions):
                     'If "function_call" is specified, you must also pass a matching function in "functions".'
                 )
             del kwargs["function_call"]
-        elif not functions:
-            functions.append(DEFAULT_RESPONSE_FUNCTION)
-        system_message_prompt_template = SystemMessagePromptTemplate.from_template(
-            self.tool_system_prompt_template
-        )
-        system_message = system_message_prompt_template.format(
-            tools=json.dumps(functions, indent=2)
-        )
         if "functions" in kwargs:
             del kwargs["functions"]
-
-        messages = [system_message] + messages
-
-        final_chunk = self._chat_stream_with_aggregation(
+            if isinstance(messages[-1], HumanMessage) and functions:
+                last_message = messages.pop()
+                tool_prompt = PromptTemplate.from_template(self.tool_system_prompt_template)
+                prompt = tool_prompt.format(tools=json.dumps(functions, indent=4))
+                messages.append(HumanMessage(content=prompt+"\n\nMy question is:\n\n"+str(last_message.content)+"\n\nLet's think step by step."))
+        chat_generation = self._create_chat_generation(
             messages,
             stop=stop,
             run_manager=run_manager,
             verbose=self.verbose,
             **kwargs,
         )
+        print(chat_generation) # Qoo
 
-        chat_generation_content = final_chunk.text
+        chat_generation_content = chat_generation.text
         if not isinstance(chat_generation_content, str):
             raise ValueError("OllamaFunctions does not support non-string output.")
         try:
             parsed_chat_result = json.loads(chat_generation_content)
-        except json.JSONDecodeError:
-            raise ValueError(
-                f'"{self.model}" did not respond with valid JSON. Please try again.'
+            called_tool_name = parsed_chat_result["tool"]
+            called_tool_arguments = parsed_chat_result["tool_input"]
+            called_tool = next(
+                (fn for fn in functions if fn["name"] == called_tool_name), None
             )
-        called_tool_name = parsed_chat_result["tool"]
-        called_tool_arguments = parsed_chat_result["tool_input"]
-        called_tool = next(
-            (fn for fn in functions if fn["name"] == called_tool_name), None
-        )
-        if called_tool is None:
-            raise ValueError(
-                f"Failed to parse a function call from {self.model} output: {chat_generation_content}"
-            )
-        if called_tool["name"] == DEFAULT_RESPONSE_FUNCTION["name"]:
-            return ChatResult(
-                generations=[
-                    ChatGeneration(
-                        message=AIMessage(
-                            content=called_tool_arguments["response"],
-                        )
-                    )
-                ]
-            )
-
-        response_message_with_functions = AIMessage(
-            content="",
-            additional_kwargs={
-                "function_call": {
-                    "name": called_tool_name,
-                    "arguments": json.dumps(called_tool_arguments)
-                    if called_tool_arguments
-                    else "",
+            if called_tool is None:
+                raise ValueError(
+                    f"Failed to parse a function call from {self.model} output: {chat_generation_content}"
+                )
+            if called_tool["name"] == DEFAULT_RESPONSE_FUNCTION["name"]:
+                return ChatResult(generations=[ChatGeneration(message=AIMessage(content=called_tool_arguments["response"]))])
+            response_message_with_functions = AIMessage(
+                content="",
+                additional_kwargs = {
+                    "function_call": {
+                        "name": called_tool_name,
+                        "arguments": json.dumps(called_tool_arguments)
+                        if called_tool_arguments
+                        else "",
+                    },
                 },
-            },
-        )
+            )
 
-        return ChatResult(
-            generations=[ChatGeneration(message=response_message_with_functions)]
-        )
+            return ChatResult(generations=[ChatGeneration(message=response_message_with_functions)])
+        except json.JSONDecodeError:
+            return ChatResult(generations=[ChatGeneration(message=AIMessage(content=chat_generation_content))])
+            # raise ValueError(
+            #     f'"{self.model}" did not respond with valid JSON. Please try again.'
+            # )
 
 
     async def _agenerate(
@@ -426,7 +420,7 @@ class ChatOllama(Ollama, OllamaFunctions):
             if isinstance(messages[-1], HumanMessage) and functions:
                 last_message = messages.pop()
                 prompt_template = PromptTemplate.from_template(self.tool_system_prompt_template)
-                prompt = prompt_template.format(tools=json.dumps(functions + [DEFAULT_RESPONSE_FUNCTION], indent=4))
+                prompt = prompt_template.format(tools=json.dumps(functions, indent=4))
                 messages.append(HumanMessage(content=prompt+"\n\nMy question is:\n\n"+str(last_message.content)+"\n\nLet's think step by step."))
 
         async for stream_resp in self._acreate_chat_stream(messages, stop, **kwargs):
