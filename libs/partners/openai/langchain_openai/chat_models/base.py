@@ -92,7 +92,7 @@ def _convert_dict_to_message(_dict: Mapping[str, str]) -> BaseMessage:
         The LangChain message.
     """
     role = _dict["role"]
-    id_ = _dict["id"]
+    id_ = _dict.get("id")
     if role == "user":
         return HumanMessage(content=_dict.get("content", ""), id=id_)
     elif role == "assistant":
