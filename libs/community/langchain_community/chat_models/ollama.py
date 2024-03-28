@@ -169,17 +169,6 @@ class ChatOllama(Ollama, OllamaFunctions):
         print(ollama_messages) # DEBUG
         return ollama_messages
 
-    def _create_chat_generation(
-        self,
-        messages: List[BaseMessage],
-        stop: Optional[List[str]] = None,
-        **kwargs: Any,
-    ):
-        _ollama_messages = self._convert_messages_to_ollama_messages(messages)
-        payload = {
-            "messages": _ollama_messages,
-        }
-        return self._create_chat(payload=payload, stop=stop, api_url=f"{self.base_url}/api/chat", **kwargs)
 
     def _create_chat_stream(
         self,
@@ -302,15 +291,14 @@ class ChatOllama(Ollama, OllamaFunctions):
                 last_message = messages.pop()
                 tool_prompt = PromptTemplate.from_template(self.tool_system_prompt_template)
                 prompt = tool_prompt.format(tools=json.dumps(functions, indent=4))
-                messages.append(HumanMessage(content=prompt+"\n\nMy question is:\n\n"+str(last_message.content)+"\n\nLet's think step by step."))
-        chat_generation = self._create_chat_generation(
+                messages.append(HumanMessage(content=prompt+"\n\nMy question is:\n"+str(last_message.content)+"\n\nLet's think step by step."))
+        chat_generation = self._chat_stream_with_aggregation(
             messages,
             stop=stop,
             run_manager=run_manager,
             verbose=self.verbose,
             **kwargs,
         )
-        print(chat_generation) # Qoo
 
         chat_generation_content = chat_generation.text
         if not isinstance(chat_generation_content, str):
@@ -343,9 +331,6 @@ class ChatOllama(Ollama, OllamaFunctions):
             return ChatResult(generations=[ChatGeneration(message=response_message_with_functions)])
         except json.JSONDecodeError:
             return ChatResult(generations=[ChatGeneration(message=AIMessage(content=chat_generation_content))])
-            # raise ValueError(
-            #     f'"{self.model}" did not respond with valid JSON. Please try again.'
-            # )
 
 
     async def _agenerate(

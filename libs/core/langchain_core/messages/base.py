@@ -23,7 +23,7 @@ class BaseMessage(Serializable):
     additional_kwargs: dict = Field(default_factory=dict)
     """Any additional information."""
 
-    type: str
+    type: Optional[str] = None
 
     name: Optional[str] = None
 
@@ -51,11 +51,11 @@ class BaseMessage(Serializable):
     def __add__(self, other: Any) -> ChatPromptTemplate:
         from langchain_core.prompts.chat import ChatPromptTemplate
 
-        prompt = ChatPromptTemplate(messages=[self])
+        prompt = ChatPromptTemplate(input_variables=[], messages=[self])
         return prompt + other
 
     def pretty_repr(self, html: bool = False) -> str:
-        title = get_msg_title_repr(self.type.title() + " Message", bold=html)
+        title = get_msg_title_repr(str(self.type) + " Message", bold=html)
         # TODO: handle non-string content.
         if self.name is not None:
             title += f"\nName: {self.name}"
