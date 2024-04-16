@@ -53,6 +53,7 @@ from langchain_core.outputs.generation import Generation
 from langchain_core.prompt_values import ChatPromptValue, PromptValue, StringPromptValue
 from langchain_core.pydantic_v1 import Field, root_validator
 from langchain_core.runnables.config import ensure_config, run_in_executor
+from langchain_core.tracers.log_stream import LogStreamCallbackHandler
 
 if TYPE_CHECKING:
     from langchain_core.runnables import RunnableConfig
@@ -237,9 +238,10 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
             )
             generation: Optional[ChatGenerationChunk] = None
             try:
-                for chunk in self._stream(
-                    messages, stop=stop, run_manager=run_manager, **kwargs
-                ):
+                for chunk in self._stream(messages, stop=stop, **kwargs):
+                    run_manager.on_llm_new_token(
+                        cast(str, chunk.message.content), chunk=chunk
+                    )
                     chunk.message.response_metadata = _gen_info_and_msg_metadata(chunk)
                     yield chunk.message
                     if generation is None:
@@ -305,9 +307,11 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
             async for chunk in self._astream(
                 messages,
                 stop=stop,
-                run_manager=run_manager,
                 **kwargs,
             ):
+                await run_manager.on_llm_new_token(
+                    cast(str, chunk.message.content), chunk=chunk
+                )
                 chunk.message.response_metadata = _gen_info_and_msg_metadata(chunk)
                 yield chunk.message
                 if generation is None:
@@ -603,12 +607,37 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
                 raise ValueError(
                     "Asked to cache, but no cache found at `langchain.cache`."
                 )
-        if inspect.signature(self._generate).parameters.get("run_manager"):
-            result = self._generate(
-                messages, stop=stop, run_manager=run_manager, **kwargs
+        # If stream is not explicitly set, check if implicitly requested by
+        # astream_events() or astream_log(). Bail out if _stream not implemented
+        if type(self)._stream != BaseChatModel._stream and kwargs.pop(
+            "stream",
+            next(
+                (
+                    True
+                    for h in run_manager.handlers
+                    if isinstance(h, LogStreamCallbackHandler)
+                ),
+                False,
             )
+            if run_manager
+            else False,
+        ):
+            chunks: List[ChatGenerationChunk] = []
+            for chunk in self._stream(messages, stop=stop, **kwargs):
+                if run_manager:
+                    run_manager.on_llm_new_token(
+                        cast(str, chunk.message.content), chunk=chunk
+                    )
+                chunk.message.response_metadata = _gen_info_and_msg_metadata(chunk)
+                chunks.append(chunk)
+            result = generate_from_stream(iter(chunks))
         else:
-            result = self._generate(messages, stop=stop, **kwargs)
+            if inspect.signature(self._generate).parameters.get("run_manager"):
+                result = self._generate(
+                    messages, stop=stop, run_manager=run_manager, **kwargs
+                )
+            else:
+                result = self._generate(messages, stop=stop, **kwargs)
 
         # Add response metadata to each generation
         for generation in result.generations:
@@ -652,12 +681,40 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
                 raise ValueError(
                     "Asked to cache, but no cache found at `langchain.cache`."
                 )
-        if inspect.signature(self._agenerate).parameters.get("run_manager"):
-            result = await self._agenerate(
-                messages, stop=stop, run_manager=run_manager, **kwargs
+        # If stream is not explicitly set, check if implicitly requested by
+        # astream_events() or astream_log(). Bail out if _astream not implemented
+        if (
+            type(self)._astream != BaseChatModel._astream
+            or type(self)._stream != BaseChatModel._stream
+        ) and kwargs.pop(
+            "stream",
+            next(
+                (
+                    True
+                    for h in run_manager.handlers
+                    if isinstance(h, LogStreamCallbackHandler)
+                ),
+                False,
             )
+            if run_manager
+            else False,
+        ):
+            chunks: List[ChatGenerationChunk] = []
+            async for chunk in self._astream(messages, stop=stop, **kwargs):
+                if run_manager:
+                    await run_manager.on_llm_new_token(
+                        cast(str, chunk.message.content), chunk=chunk
+                    )
+                chunk.message.response_metadata = _gen_info_and_msg_metadata(chunk)
+                chunks.append(chunk)
+            result = generate_from_stream(iter(chunks))
         else:
-            result = await self._agenerate(messages, stop=stop, **kwargs)
+            if inspect.signature(self._agenerate).parameters.get("run_manager"):
+                result = await self._agenerate(
+                    messages, stop=stop, run_manager=run_manager, **kwargs
+                )
+            else:
+                result = await self._agenerate(messages, stop=stop, **kwargs)
 
         # Add response metadata to each generation
         for generation in result.generations:
