@@ -1697,7 +1697,7 @@ files = [
 
 [[package]]
 name = "langchain"
-version = "0.1.12"
+version = "0.1.13"
 description = "Building applications with LLMs through composability"
 optional = false
 python-versions = ">=3.8.1,<4.0"
@@ -1742,7 +1742,7 @@ url = "libs/langchain"
 
 [[package]]
 name = "langchain-community"
-version = "0.0.28"
+version = "0.0.29"
 description = "Community contributed LangChain integrations."
 optional = false
 python-versions = ">=3.8.1,<4.0"
@@ -1770,7 +1770,7 @@ url = "libs/community"
 
 [[package]]
 name = "langchain-core"
-version = "0.1.31"
+version = "0.1.33"
 description = "Building applications with LLMs through composability"
 optional = false
 python-versions = ">=3.8.1,<4.0"
@@ -1796,7 +1796,7 @@ url = "libs/core"
 
 [[package]]
 name = "langchain-experimental"
-version = "0.0.53"
+version = "0.0.54"
 description = "Building applications with LLMs through composability"
 optional = false
 python-versions = ">=3.8.1,<4.0"
