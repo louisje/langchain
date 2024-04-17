@@ -3497,7 +3497,7 @@ url = "../community"
 
 [[package]]
 name = "langchain-core"
-version = "0.1.41"
+version = "0.1.42"
 description = "Building applications with LLMs through composability"
 optional = false
 python-versions = ">=3.8.1,<4.0"
@@ -3521,7 +3521,7 @@ url = "../core"
 
 [[package]]
 name = "langchain-openai"
-version = "0.1.1"
+version = "0.1.3"
 description = "An integration package connecting OpenAI and LangChain"
 optional = false
 python-versions = ">=3.8.1,<4.0"
