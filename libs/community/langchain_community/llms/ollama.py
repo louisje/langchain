@@ -206,8 +206,6 @@ class _OllamaCommon(BaseLanguageModel):
             raise ValueError("`stop` found in both the input and default params.")
         elif self.stop is not None:
             stop = self.stop
-        elif stop is None:
-            stop = []
 
         params = self._default_params
         for key in self._default_params:
@@ -270,8 +268,6 @@ class _OllamaCommon(BaseLanguageModel):
             raise ValueError("`stop` found in both the input and default params.")
         elif self.stop is not None:
             stop = self.stop
-        elif stop is None:
-            stop = []
 
         params = self._default_params
         for key in self._default_params:

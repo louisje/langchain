@@ -176,9 +176,9 @@ class ChatOllama(Ollama, OllamaFunctions):
         stop: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> Iterator[str]:
-        _ollama_messages = self._convert_messages_to_ollama_messages(messages)
         payload = {
-            "messages": _ollama_messages,
+            "model": self.model,
+            "messages": self._convert_messages_to_ollama_messages(messages),
         }
         yield from self._create_stream(
             payload=payload, stop=stop, api_url=f"{self.base_url}/api/chat", **kwargs
@@ -191,6 +191,7 @@ class ChatOllama(Ollama, OllamaFunctions):
         **kwargs: Any,
     ) -> AsyncIterator[str]:
         payload = {
+            "model": self.model,
             "messages": self._convert_messages_to_ollama_messages(messages),
         }
         async for stream_resp in self._acreate_stream(

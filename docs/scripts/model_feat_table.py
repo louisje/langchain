@@ -20,9 +20,46 @@ CHAT_MODEL_FEAT_TABLE_CORRECTION = {
     "ChatMLflowAIGateway": {"_agenerate": False},
     "PromptLayerChatOpenAI": {"_stream": False, "_astream": False},
     "ChatKonko": {"_astream": False, "_agenerate": False},
-    "ChatOpenAI": {"tool_calling": True},
-    "ChatAnthropic": {"tool_calling": True},
-    "ChatMistralAI": {"tool_calling": True},
+    "ChatAnthropic": {
+        "tool_calling": True,
+        "structured_output": True,
+        "package": "langchain-anthropic",
+    },
+    "ChatMistralAI": {
+        "tool_calling": True,
+        "structured_output": True,
+        "package": "langchain-mistralai",
+    },
+    "ChatFireworks": {
+        "tool_calling": True,
+        "structured_output": True,
+        "package": "langchain-fireworks",
+    },
+    "AzureChatOpenAI": {
+        "tool_calling": True,
+        "structured_output": True,
+        "package": "langchain-openai",
+    },
+    "ChatOpenAI": {
+        "tool_calling": True,
+        "structured_output": True,
+        "package": "langchain-openai",
+    },
+    "ChatVertexAI": {
+        "tool_calling": True,
+        "structured_output": True,
+        "package": "langchain-google-vertexai",
+    },
+    "ChatGroq": {
+        "tool_calling": True,
+        "structured_output": True,
+        "package": "langchain-groq",
+    },
+    "ChatCohere": {
+        "tool_calling": True,
+        "structured_output": True,
+        "package": "langchain-cohere",
+    },
 }
 
 
@@ -141,18 +178,42 @@ def get_chat_model_table() -> str:
         for k, v in {**feat_table, **CHAT_MODEL_FEAT_TABLE_CORRECTION}.items()
         if k not in CHAT_MODEL_IGNORE
     }
-    header = ["model", "_agenerate", "_stream", "_astream", "tool_calling"]
+    header = [
+        "model",
+        "_agenerate",
+        "_stream",
+        "_astream",
+        "tool_calling",
+        "structured_output",
+        "package",
+    ]
     title = [
         "Model",
         "Invoke",
         "Async invoke",
         "Stream",
         "Async stream",
-        "Tool calling",
+        "[Tool calling](/docs/modules/model_io/chat/function_calling/)",
+        "[Structured output](/docs/modules/model_io/chat/structured_output/)",
+        "Python Package",
     ]
     rows = [title, [":-"] + [":-:"] * (len(title) - 1)]
     for llm, feats in sorted(final_feats.items()):
-        rows += [[llm, "✅"] + ["✅" if feats.get(h) else "❌" for h in header[1:]]]
+        # Fields are in the order of the header
+        row = [llm, "✅"]
+        for h in header[1:]:
+            value = feats.get(h)
+            index = header.index(h)
+            if h == "package":
+                row.append(value or "langchain-community")
+            else:
+                if value == "partial":
+                    row.append("🟡")
+                elif value is True:
+                    row.append("✅")
+                else:
+                    row.append("❌")
+        rows.append(row)
     return "\n".join(["|".join(row) for row in rows])
 
 
