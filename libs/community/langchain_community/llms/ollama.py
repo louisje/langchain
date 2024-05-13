@@ -9,9 +9,7 @@ from langchain_core.callbacks import (
 )
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.language_models.llms import BaseLLM
 from langchain_core.outputs import GenerationChunk, LLMResult
-from langchain_core.outputs.chat_generation import ChatGeneration
 from langchain_core.pydantic_v1 import Extra
 
 

@@ -15,8 +15,10 @@ from typing import (
     overload,
 )
 
+from langchain_community.llms.ollama import _OllamaCommon, Ollama
 from langchain_core.callbacks import CallbackManagerForLLMRun
 from langchain_core.language_models import LanguageModelInput
+from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage
 from langchain_core.output_parsers.base import OutputParserLike
 from langchain_core.output_parsers.json import JsonOutputParser
@@ -28,6 +30,7 @@ from langchain_core.runnables import Runnable, RunnableLambda
 from langchain_core.runnables.base import RunnableMap
 from langchain_core.runnables.passthrough import RunnablePassthrough
 from langchain_core.tools import BaseTool
+from langchain_core.utils.function_calling import convert_to_openai_tool
 
 DEFAULT_SYSTEM_TEMPLATE = """To answer my question, you have select one of the following tools:
 
@@ -120,7 +123,7 @@ def parse_response(message: BaseMessage) -> str:
     raise ValueError(f"`message` is not an instance of `AIMessage`: {message}")
 
 
-class OllamaFunctions():
+class OllamaFunctions(BaseChatModel, _OllamaCommon):
     """Function chat model that uses Ollama API."""
 
     tool_system_prompt_template: str = DEFAULT_SYSTEM_TEMPLATE
@@ -133,7 +136,7 @@ class OllamaFunctions():
         tools: Sequence[Union[Dict[str, Any], Type[BaseModel], Callable, BaseTool]],
         **kwargs: Any,
     ) -> Runnable[LanguageModelInput, BaseMessage]:
-        return self.bind(functions=tools, **kwargs)
+        return self.bind(tools=[convert_to_openai_tool(tool) for tool in tools], **kwargs)
 
     @overload
     def with_structured_output(

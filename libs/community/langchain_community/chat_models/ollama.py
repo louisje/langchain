@@ -9,7 +9,6 @@ from langchain_core.callbacks import (
     AsyncCallbackManagerForLLMRun,
     CallbackManagerForLLMRun,
 )
-from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import (
     AIMessage,
     AIMessageChunk,
@@ -20,9 +19,9 @@ from langchain_core.messages import (
     FunctionMessage,
 )
 from langchain_core.outputs import ChatGeneration, ChatGenerationChunk, ChatResult
-from langchain_core.prompts.chat import SystemMessagePromptTemplate
+from langchain_core.utils.function_calling import convert_to_openai_tool
 
-from langchain_community.llms.ollama import Ollama, OllamaEndpointNotFoundError, _OllamaCommon
+from langchain_community.llms.ollama import Ollama, OllamaEndpointNotFoundError
 
 
 @deprecated("0.0.3", alternative="_chat_stream_response_to_chat_generation_chunk")
@@ -126,7 +125,7 @@ class ChatOllama(Ollama, OllamaFunctions):
                     "tool_output": message.content,
                 }
                 content = json.dumps(tool_output, indent=4)
-                print(content) # Qoo
+                print(content) # DEBUG
             elif isinstance(message, AIMessage) and not message.content and "function_call" in message.additional_kwargs:
                 function_call = {
                     "name": message.additional_kwargs["function_call"]["name"],
@@ -357,7 +356,6 @@ class ChatOllama(Ollama, OllamaFunctions):
                     HumanMessage(content="Tell me about the history of AI")
                 ])
         """
-
         final_chunk = await self._achat_stream_with_aggregation(
             messages,
             stop=stop,
@@ -399,14 +397,13 @@ class ChatOllama(Ollama, OllamaFunctions):
         run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> AsyncIterator[ChatGenerationChunk]:
-
-        if "functions" in kwargs:
-            functions = kwargs["functions"]
-            del kwargs["functions"]
-            if isinstance(messages[-1], HumanMessage) and functions:
+        if "tools" in kwargs:
+            tools = kwargs["tools"]
+            del kwargs["tools"]
+            if isinstance(messages[-1], HumanMessage) and tools:
                 last_message = messages.pop()
                 prompt_template = PromptTemplate.from_template(self.tool_system_prompt_template)
-                prompt = prompt_template.format(tools=json.dumps(functions, indent=4))
+                prompt = prompt_template.format(tools=json.dumps(tools, indent=4))
                 messages.append(HumanMessage(content=prompt+"\n\nMy question is:\n\n"+str(last_message.content)+"\n\nLet's think step by step."))
 
         async for stream_resp in self._acreate_chat_stream(messages, stop, **kwargs):

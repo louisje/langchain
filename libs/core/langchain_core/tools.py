@@ -176,8 +176,6 @@ class ChildTool(BaseTool):
                 f"{typehint_mandate}"
             )
 
-    name: str
-    """The unique name of the tool that clearly communicates its purpose."""
     description: str
     """Used to tell the model how/when/why to use the tool.
     

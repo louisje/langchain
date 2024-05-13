@@ -16,7 +16,7 @@ TAVILY_API_URL = "https://api.tavily.com"
 class TavilySearchAPIWrapper(BaseModel):
     """Wrapper for Tavily Search API."""
 
-    tavily_api_key: SecretStr
+    tavily_api_key: Optional[SecretStr] = None
 
     class Config:
         """Configuration for this pydantic object."""
