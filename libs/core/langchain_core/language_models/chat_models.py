@@ -13,6 +13,7 @@ from typing import (
     Dict,
     Iterator,
     List,
+    Literal,
     Optional,
     Sequence,
     Type,
@@ -20,6 +21,8 @@ from typing import (
     cast,
     Union
 )
+
+from typing_extensions import TypedDict
 
 from langchain_core._api import deprecated
 from langchain_core.caches import BaseCache
@@ -55,12 +58,21 @@ from langchain_core.outputs.generation import Generation
 from langchain_core.prompt_values import ChatPromptValue, PromptValue, StringPromptValue
 from langchain_core.pydantic_v1 import Field, root_validator
 from langchain_core.runnables.config import ensure_config, run_in_executor
-from langchain_core.tracers.log_stream import LogStreamCallbackHandler
+from langchain_core.tracers._streaming import _StreamingCallbackHandler
 
 if TYPE_CHECKING:
     from langchain_core.pydantic_v1 import BaseModel
     from langchain_core.runnables import Runnable, RunnableConfig
     from langchain_core.tools import BaseTool
+
+
+class LangSmithParams(TypedDict, total=False):
+    ls_provider: str
+    ls_model_name: str
+    ls_model_type: Literal["chat"]
+    ls_temperature: Optional[float]
+    ls_max_tokens: Optional[int]
+    ls_stop: Optional[List[str]]
 
 
 def generate_from_stream(stream: Iterator[ChatGenerationChunk]) -> ChatResult:
@@ -224,13 +236,17 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
             messages = self._convert_input(input).to_messages()
             params = self._get_invocation_params(stop=stop, **kwargs)
             options = {"stop": stop, **kwargs}
+            inheritable_metadata = {
+                **(config.get("metadata") or {}),
+                **self._get_ls_params(stop=stop, **kwargs),
+            }
             callback_manager = CallbackManager.configure(
                 config.get("callbacks"),
                 self.callbacks,
                 self.verbose,
                 config.get("tags"),
                 self.tags,
-                config.get("metadata"),
+                inheritable_metadata,
                 self.metadata,
             )
             (run_manager,) = callback_manager.on_chat_model_start(
@@ -291,13 +307,17 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
         messages = self._convert_input(input).to_messages()
         params = self._get_invocation_params(stop=stop, **kwargs)
         options = {"stop": stop, **kwargs}
+        inheritable_metadata = {
+            **(config.get("metadata") or {}),
+            **self._get_ls_params(stop=stop, **kwargs),
+        }
         callback_manager = AsyncCallbackManager.configure(
             config.get("callbacks"),
             self.callbacks,
             self.verbose,
             config.get("tags"),
             self.tags,
-            config.get("metadata"),
+            inheritable_metadata,
             self.metadata,
         )
         (run_manager,) = await callback_manager.on_chat_model_start(
@@ -354,6 +374,17 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
         params["stop"] = stop
         return {**params, **kwargs}
 
+    def _get_ls_params(
+        self,
+        stop: Optional[List[str]] = None,
+        **kwargs: Any,
+    ) -> LangSmithParams:
+        """Get standard params for tracing."""
+        ls_params = LangSmithParams(ls_model_type="chat")
+        if stop:
+            ls_params["ls_stop"] = stop
+        return ls_params
+
     def _get_llm_string(self, stop: Optional[List[str]] = None, **kwargs: Any) -> str:
         if self.is_lc_serializable():
             params = {**kwargs, **{"stop": stop}}
@@ -403,6 +434,10 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
         """
         params = self._get_invocation_params(stop=stop, **kwargs)
         options = {"stop": stop}
+        inheritable_metadata = {
+            **(metadata or {}),
+            **self._get_ls_params(stop=stop, **kwargs),
+        }
 
         callback_manager = CallbackManager.configure(
             callbacks,
@@ -410,7 +445,7 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
             self.verbose,
             tags,
             self.tags,
-            metadata,
+            inheritable_metadata,
             self.metadata,
         )
         run_managers = callback_manager.on_chat_model_start(
@@ -490,6 +525,10 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
         """
         params = self._get_invocation_params(stop=stop, **kwargs)
         options = {"stop": stop}
+        inheritable_metadata = {
+            **(metadata or {}),
+            **self._get_ls_params(stop=stop, **kwargs),
+        }
 
         callback_manager = AsyncCallbackManager.configure(
             callbacks,
@@ -497,7 +536,7 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
             self.verbose,
             tags,
             self.tags,
-            metadata,
+            inheritable_metadata,
             self.metadata,
         )
 
@@ -626,7 +665,7 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
                     (
                         True
                         for h in run_manager.handlers
-                        if isinstance(h, LogStreamCallbackHandler)
+                        if isinstance(h, _StreamingCallbackHandler)
                     ),
                     False,
                 )
@@ -709,7 +748,7 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
                     (
                         True
                         for h in run_manager.handlers
-                        if isinstance(h, LogStreamCallbackHandler)
+                        if isinstance(h, _StreamingCallbackHandler)
                     ),
                     False,
                 )
