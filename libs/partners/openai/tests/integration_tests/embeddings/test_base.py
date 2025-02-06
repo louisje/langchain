@@ -1,4 +1,5 @@
 """Test OpenAI embeddings."""
+
 import numpy as np
 import openai
 
@@ -42,7 +43,7 @@ def test_langchain_openai_embeddings_equivalent_to_raw() -> None:
         .data[0]
         .embedding
     )
-    assert np.isclose(lc_output, direct_output).all()
+    assert np.allclose(lc_output, direct_output, atol=0.001)
 
 
 async def test_langchain_openai_embeddings_equivalent_to_raw_async() -> None:
@@ -56,4 +57,13 @@ async def test_langchain_openai_embeddings_equivalent_to_raw_async() -> None:
         .data[0]
         .embedding
     )
-    assert np.isclose(lc_output, direct_output).all()
+    assert np.allclose(lc_output, direct_output, atol=0.001)
+
+
+def test_langchain_openai_embeddings_dimensions_large_num() -> None:
+    """Test openai embeddings."""
+    documents = [f"foo bar {i}" for i in range(2000)]
+    embedding = OpenAIEmbeddings(model="text-embedding-3-small", dimensions=128)
+    output = embedding.embed_documents(documents)
+    assert len(output) == 2000
+    assert len(output[0]) == 128

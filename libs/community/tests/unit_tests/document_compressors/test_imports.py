@@ -4,7 +4,11 @@ EXPECTED_ALL = [
     "LLMLinguaCompressor",
     "OpenVINOReranker",
     "JinaRerank",
+    "RankLLMRerank",
     "FlashrankRerank",
+    "DashScopeRerank",
+    "VolcengineRerank",
+    "InfinityRerank",
 ]
 
 

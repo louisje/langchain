@@ -2,7 +2,7 @@
 Unit tests for the PebbloRetrievalQA chain
 """
 
-from typing import List
+from typing import Any, List
 from unittest.mock import Mock
 
 import pytest
@@ -11,7 +11,11 @@ from langchain_core.callbacks import (
     CallbackManagerForRetrieverRun,
 )
 from langchain_core.documents import Document
-from langchain_core.vectorstores import VectorStore, VectorStoreRetriever
+from langchain_core.vectorstores import (
+    InMemoryVectorStore,
+    VectorStore,
+    VectorStoreRetriever,
+)
 
 from langchain_community.chains import PebbloRetrievalQA
 from langchain_community.chains.pebblo_retrieval.models import (
@@ -19,7 +23,6 @@ from langchain_community.chains.pebblo_retrieval.models import (
     ChainInput,
     SemanticContext,
 )
-from langchain_community.vectorstores.chroma import Chroma
 from langchain_community.vectorstores.pinecone import Pinecone
 from tests.unit_tests.llms.fake_llm import FakeLLM
 
@@ -32,26 +35,18 @@ class FakeRetriever(VectorStoreRetriever):
     vectorstore: VectorStore = Mock()
 
     def _get_relevant_documents(
-        self, query: str, *, run_manager: CallbackManagerForRetrieverRun
+        self, query: str, *, run_manager: CallbackManagerForRetrieverRun, **kwargs: Any
     ) -> List[Document]:
         return [Document(page_content=query)]
 
     async def _aget_relevant_documents(
-        self, query: str, *, run_manager: AsyncCallbackManagerForRetrieverRun
+        self,
+        query: str,
+        *,
+        run_manager: AsyncCallbackManagerForRetrieverRun,
+        **kwargs: Any,
     ) -> List[Document]:
         return [Document(page_content=query)]
-
-
-@pytest.fixture
-def unsupported_retriever() -> FakeRetriever:
-    """
-    Create a FakeRetriever instance
-    """
-    retriever = FakeRetriever()
-    retriever.search_kwargs = {}
-    # Set the class of vectorstore to Chroma
-    retriever.vectorstore.__class__ = Chroma
-    return retriever
 
 
 @pytest.fixture
@@ -72,7 +67,12 @@ def pebblo_retrieval_qa(retriever: FakeRetriever) -> PebbloRetrievalQA:
     Create a PebbloRetrievalQA instance
     """
     pebblo_retrieval_qa = PebbloRetrievalQA.from_chain_type(
-        llm=FakeLLM(), chain_type="stuff", retriever=retriever
+        llm=FakeLLM(),
+        chain_type="stuff",
+        retriever=retriever,
+        owner="owner",
+        description="description",
+        app_name="app_name",
     )
 
     return pebblo_retrieval_qa
@@ -102,9 +102,7 @@ def test_invoke(pebblo_retrieval_qa: PebbloRetrievalQA) -> None:
     assert response is not None
 
 
-def test_validate_vectorstore(
-    retriever: FakeRetriever, unsupported_retriever: FakeRetriever
-) -> None:
+def test_validate_vectorstore(retriever: FakeRetriever) -> None:
     """
     Test vectorstore validation
     """
@@ -114,7 +112,15 @@ def test_validate_vectorstore(
         llm=FakeLLM(),
         chain_type="stuff",
         retriever=retriever,
+        owner="owner",
+        description="description",
+        app_name="app_name",
     )
+
+    unsupported_retriever = FakeRetriever()
+    unsupported_retriever.search_kwargs = {}
+    # Set the class of vectorstore
+    unsupported_retriever.vectorstore.__class__ = InMemoryVectorStore
 
     # validate_vectorstore method should raise a ValueError for unsupported vectorstores
     with pytest.raises(ValueError) as exc_info:
@@ -122,6 +128,9 @@ def test_validate_vectorstore(
             llm=FakeLLM(),
             chain_type="stuff",
             retriever=unsupported_retriever,
+            owner="owner",
+            description="description",
+            app_name="app_name",
         )
     assert (
         "Vectorstore must be an instance of one of the supported vectorstores"

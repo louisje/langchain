@@ -22,6 +22,9 @@ if TYPE_CHECKING:
     from langchain_community.embeddings.anyscale import (
         AnyscaleEmbeddings,
     )
+    from langchain_community.embeddings.ascend import (
+        AscendEmbeddings,
+    )
     from langchain_community.embeddings.awa import (
         AwaEmbeddings,
     )
@@ -42,6 +45,9 @@ if TYPE_CHECKING:
     )
     from langchain_community.embeddings.clarifai import (
         ClarifaiEmbeddings,
+    )
+    from langchain_community.embeddings.clova import (
+        ClovaEmbeddings,
     )
     from langchain_community.embeddings.cohere import (
         CohereEmbeddings,
@@ -95,12 +101,16 @@ if TYPE_CHECKING:
     from langchain_community.embeddings.huggingface_hub import (
         HuggingFaceHubEmbeddings,
     )
+    from langchain_community.embeddings.hunyuan import (
+        HunyuanEmbeddings,
+    )
     from langchain_community.embeddings.infinity import (
         InfinityEmbeddings,
     )
     from langchain_community.embeddings.infinity_local import (
         InfinityEmbeddingsLocal,
     )
+    from langchain_community.embeddings.ipex_llm import IpexLLMBgeEmbeddings
     from langchain_community.embeddings.itrex import (
         QuantizedBgeEmbeddings,
     )
@@ -138,11 +148,17 @@ if TYPE_CHECKING:
     from langchain_community.embeddings.mlflow_gateway import (
         MlflowAIGatewayEmbeddings,
     )
+    from langchain_community.embeddings.model2vec import (
+        Model2vecEmbeddings,
+    )
     from langchain_community.embeddings.modelscope_hub import (
         ModelScopeEmbeddings,
     )
     from langchain_community.embeddings.mosaicml import (
         MosaicMLInstructorEmbeddings,
+    )
+    from langchain_community.embeddings.naver import (
+        ClovaXEmbeddings,
     )
     from langchain_community.embeddings.nemo import (
         NeMoEmbeddings,
@@ -170,7 +186,10 @@ if TYPE_CHECKING:
         QuantizedBiEncoderEmbeddings,
     )
     from langchain_community.embeddings.oracleai import (
-        OracleEmbeddings,  # noqa: F401
+        OracleEmbeddings,
+    )
+    from langchain_community.embeddings.ovhcloud import (
+        OVHCloudEmbeddings,
     )
     from langchain_community.embeddings.premai import (
         PremAIEmbeddings,
@@ -203,6 +222,12 @@ if TYPE_CHECKING:
     from langchain_community.embeddings.tensorflow_hub import (
         TensorflowHubEmbeddings,
     )
+    from langchain_community.embeddings.textembed import (
+        TextEmbedEmbeddings,
+    )
+    from langchain_community.embeddings.titan_takeoff import (
+        TitanTakeoffEmbed,
+    )
     from langchain_community.embeddings.vertexai import (
         VertexAIEmbeddings,
     )
@@ -218,17 +243,23 @@ if TYPE_CHECKING:
     from langchain_community.embeddings.yandex import (
         YandexGPTEmbeddings,
     )
+    from langchain_community.embeddings.zhipuai import (
+        ZhipuAIEmbeddings,
+    )
 
 __all__ = [
     "AlephAlphaAsymmetricSemanticEmbedding",
     "AlephAlphaSymmetricSemanticEmbedding",
     "AnyscaleEmbeddings",
+    "AscendEmbeddings",
     "AwaEmbeddings",
     "AzureOpenAIEmbeddings",
     "BaichuanTextEmbeddings",
     "BedrockEmbeddings",
     "BookendEmbeddings",
     "ClarifaiEmbeddings",
+    "ClovaEmbeddings",
+    "ClovaXEmbeddings",
     "CohereEmbeddings",
     "DashScopeEmbeddings",
     "DatabricksEmbeddings",
@@ -251,6 +282,7 @@ __all__ = [
     "HuggingFaceInstructEmbeddings",
     "InfinityEmbeddings",
     "InfinityEmbeddingsLocal",
+    "IpexLLMBgeEmbeddings",
     "JavelinAIGatewayEmbeddings",
     "JinaEmbeddings",
     "JohnSnowLabsEmbeddings",
@@ -263,6 +295,7 @@ __all__ = [
     "MlflowAIGatewayEmbeddings",
     "MlflowCohereEmbeddings",
     "MlflowEmbeddings",
+    "Model2vecEmbeddings",
     "ModelScopeEmbeddings",
     "MosaicMLInstructorEmbeddings",
     "NLPCloudEmbeddings",
@@ -274,6 +307,7 @@ __all__ = [
     "OpenVINOBgeEmbeddings",
     "OpenVINOEmbeddings",
     "OracleEmbeddings",
+    "OVHCloudEmbeddings",
     "PremAIEmbeddings",
     "QianfanEmbeddingsEndpoint",
     "QuantizedBgeEmbeddings",
@@ -288,11 +322,15 @@ __all__ = [
     "SpacyEmbeddings",
     "SparkLLMTextEmbeddings",
     "TensorflowHubEmbeddings",
+    "TextEmbedEmbeddings",
+    "TitanTakeoffEmbed",
     "VertexAIEmbeddings",
     "VolcanoEmbeddings",
     "VoyageEmbeddings",
     "XinferenceEmbeddings",
     "YandexGPTEmbeddings",
+    "ZhipuAIEmbeddings",
+    "HunyuanEmbeddings",
 ]
 
 _module_lookup = {
@@ -305,6 +343,8 @@ _module_lookup = {
     "BedrockEmbeddings": "langchain_community.embeddings.bedrock",
     "BookendEmbeddings": "langchain_community.embeddings.bookend",
     "ClarifaiEmbeddings": "langchain_community.embeddings.clarifai",
+    "ClovaEmbeddings": "langchain_community.embeddings.clova",
+    "ClovaXEmbeddings": "langchain_community.embeddings.naver",
     "CohereEmbeddings": "langchain_community.embeddings.cohere",
     "DashScopeEmbeddings": "langchain_community.embeddings.dashscope",
     "DatabricksEmbeddings": "langchain_community.embeddings.databricks",
@@ -327,6 +367,7 @@ _module_lookup = {
     "HuggingFaceInstructEmbeddings": "langchain_community.embeddings.huggingface",
     "InfinityEmbeddings": "langchain_community.embeddings.infinity",
     "InfinityEmbeddingsLocal": "langchain_community.embeddings.infinity_local",
+    "IpexLLMBgeEmbeddings": "langchain_community.embeddings.ipex_llm",
     "JavelinAIGatewayEmbeddings": "langchain_community.embeddings.javelin_ai_gateway",
     "JinaEmbeddings": "langchain_community.embeddings.jina",
     "JohnSnowLabsEmbeddings": "langchain_community.embeddings.johnsnowlabs",
@@ -339,6 +380,7 @@ _module_lookup = {
     "MlflowAIGatewayEmbeddings": "langchain_community.embeddings.mlflow_gateway",
     "MlflowCohereEmbeddings": "langchain_community.embeddings.mlflow",
     "MlflowEmbeddings": "langchain_community.embeddings.mlflow",
+    "Model2vecEmbeddings": "langchain_community.embeddings.model2vec",
     "ModelScopeEmbeddings": "langchain_community.embeddings.modelscope_hub",
     "MosaicMLInstructorEmbeddings": "langchain_community.embeddings.mosaicml",
     "NLPCloudEmbeddings": "langchain_community.embeddings.nlpcloud",
@@ -353,6 +395,7 @@ _module_lookup = {
     "QuantizedBgeEmbeddings": "langchain_community.embeddings.itrex",
     "QuantizedBiEncoderEmbeddings": "langchain_community.embeddings.optimum_intel",
     "OracleEmbeddings": "langchain_community.embeddings.oracleai",
+    "OVHCloudEmbeddings": "langchain_community.embeddings.ovhcloud",
     "SagemakerEndpointEmbeddings": "langchain_community.embeddings.sagemaker_endpoint",
     "SambaStudioEmbeddings": "langchain_community.embeddings.sambanova",
     "SelfHostedEmbeddings": "langchain_community.embeddings.self_hosted",
@@ -367,9 +410,13 @@ _module_lookup = {
     "VolcanoEmbeddings": "langchain_community.embeddings.volcengine",
     "VoyageEmbeddings": "langchain_community.embeddings.voyageai",
     "XinferenceEmbeddings": "langchain_community.embeddings.xinference",
+    "TextEmbedEmbeddings": "langchain_community.embeddings.textembed",
     "TitanTakeoffEmbed": "langchain_community.embeddings.titan_takeoff",
     "PremAIEmbeddings": "langchain_community.embeddings.premai",
     "YandexGPTEmbeddings": "langchain_community.embeddings.yandex",
+    "AscendEmbeddings": "langchain_community.embeddings.ascend",
+    "ZhipuAIEmbeddings": "langchain_community.embeddings.zhipuai",
+    "HunyuanEmbeddings": "langchain_community.embeddings.hunyuan",
 }
 
 
@@ -379,8 +426,6 @@ def __getattr__(name: str) -> Any:
         return getattr(module, name)
     raise AttributeError(f"module {__name__} has no attribute {name}")
 
-
-__all__ = list(_module_lookup.keys())
 
 logger = logging.getLogger(__name__)
 

@@ -10,11 +10,11 @@ from different APIs and services.
     Embeddings --> <name>Embeddings  # Examples: OpenAIEmbeddings, HuggingFaceEmbeddings
 """
 
-
 import logging
 from typing import TYPE_CHECKING, Any
 
 from langchain._api import create_importer
+from langchain.embeddings.base import init_embeddings
 from langchain.embeddings.cache import CacheBackedEmbeddings
 
 if TYPE_CHECKING:
@@ -222,4 +222,5 @@ __all__ = [
     "VertexAIEmbeddings",
     "VoyageEmbeddings",
     "XinferenceEmbeddings",
+    "init_embeddings",
 ]

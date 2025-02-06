@@ -43,6 +43,9 @@ if TYPE_CHECKING:
     from langchain_community.vectorstores.apache_doris import (
         ApacheDoris,
     )
+    from langchain_community.vectorstores.aperturedb import (
+        ApertureDB,
+    )
     from langchain_community.vectorstores.astradb import (
         AstraDB,
     )
@@ -54,6 +57,9 @@ if TYPE_CHECKING:
     )
     from langchain_community.vectorstores.azure_cosmos_db import (
         AzureCosmosDBVectorSearch,
+    )
+    from langchain_community.vectorstores.azure_cosmos_db_no_sql import (
+        AzureCosmosDBNoSqlVectorSearch,
     )
     from langchain_community.vectorstores.azuresearch import (
         AzureSearch,
@@ -153,6 +159,10 @@ if TYPE_CHECKING:
     from langchain_community.vectorstores.llm_rails import (
         LLMRails,
     )
+    from langchain_community.vectorstores.manticore_search import (
+        ManticoreSearch,
+        ManticoreSearchSettings,
+    )
     from langchain_community.vectorstores.marqo import (
         Marqo,
     )
@@ -182,7 +192,7 @@ if TYPE_CHECKING:
         OpenSearchVectorSearch,
     )
     from langchain_community.vectorstores.oraclevs import (
-        OracleVS,  # noqa: F401
+        OracleVS,
     )
     from langchain_community.vectorstores.pathway import (
         PathwayVectorClient,
@@ -220,6 +230,9 @@ if TYPE_CHECKING:
     from langchain_community.vectorstores.sklearn import (
         SKLearnVectorStore,
     )
+    from langchain_community.vectorstores.sqlitevec import (
+        SQLiteVec,
+    )
     from langchain_community.vectorstores.sqlitevss import (
         SQLiteVSS,
     )
@@ -231,6 +244,9 @@ if TYPE_CHECKING:
     )
     from langchain_community.vectorstores.surrealdb import (
         SurrealDBStore,
+    )
+    from langchain_community.vectorstores.tablestore import (
+        TablestoreVectorStore,
     )
     from langchain_community.vectorstores.tair import (
         Tair,
@@ -290,6 +306,9 @@ if TYPE_CHECKING:
     from langchain_community.vectorstores.zep import (
         ZepVectorStore,
     )
+    from langchain_community.vectorstores.zep_cloud import (
+        ZepCloudVectorStore,
+    )
     from langchain_community.vectorstores.zilliz import (
         Zilliz,
     )
@@ -301,9 +320,11 @@ __all__ = [
     "AnalyticDB",
     "Annoy",
     "ApacheDoris",
+    "ApertureDB",
     "AstraDB",
     "AtlasDB",
     "AwaDB",
+    "AzureCosmosDBNoSqlVectorSearch",
     "AzureCosmosDBVectorSearch",
     "AzureSearch",
     "BESVectorStore",
@@ -341,6 +362,8 @@ __all__ = [
     "LLMRails",
     "LanceDB",
     "Lantern",
+    "ManticoreSearch",
+    "ManticoreSearchSettings",
     "Marqo",
     "MatchingEngine",
     "Meilisearch",
@@ -363,6 +386,7 @@ __all__ = [
     "Relyt",
     "Rockset",
     "SKLearnVectorStore",
+    "SQLiteVec",
     "SQLiteVSS",
     "ScaNN",
     "SemaDB",
@@ -370,6 +394,7 @@ __all__ = [
     "StarRocks",
     "SupabaseVectorStore",
     "SurrealDBStore",
+    "TablestoreVectorStore",
     "Tair",
     "TencentVectorDB",
     "TiDBVectorStore",
@@ -389,6 +414,7 @@ __all__ = [
     "Weaviate",
     "Yellowbrick",
     "ZepVectorStore",
+    "ZepCloudVectorStore",
     "Zilliz",
 ]
 
@@ -399,10 +425,12 @@ _module_lookup = {
     "AnalyticDB": "langchain_community.vectorstores.analyticdb",
     "Annoy": "langchain_community.vectorstores.annoy",
     "ApacheDoris": "langchain_community.vectorstores.apache_doris",
+    "ApertureDB": "langchain_community.vectorstores.aperturedb",
     "AstraDB": "langchain_community.vectorstores.astradb",
     "AtlasDB": "langchain_community.vectorstores.atlas",
     "AwaDB": "langchain_community.vectorstores.awadb",
-    "AzureCosmosDBVectorSearch": "langchain_community.vectorstores.azure_cosmos_db",
+    "AzureCosmosDBNoSqlVectorSearch": "langchain_community.vectorstores.azure_cosmos_db_no_sql",  # noqa: E501
+    "AzureCosmosDBVectorSearch": "langchain_community.vectorstores.azure_cosmos_db",  # noqa: E501
     "AzureSearch": "langchain_community.vectorstores.azuresearch",
     "BaiduVectorDB": "langchain_community.vectorstores.baiduvectordb",
     "BESVectorStore": "langchain_community.vectorstores.baiducloud_vector_search",
@@ -439,6 +467,8 @@ _module_lookup = {
     "LLMRails": "langchain_community.vectorstores.llm_rails",
     "LanceDB": "langchain_community.vectorstores.lancedb",
     "Lantern": "langchain_community.vectorstores.lantern",
+    "ManticoreSearch": "langchain_community.vectorstores.manticore_search",
+    "ManticoreSearchSettings": "langchain_community.vectorstores.manticore_search",
     "Marqo": "langchain_community.vectorstores.marqo",
     "MatchingEngine": "langchain_community.vectorstores.matching_engine",
     "Meilisearch": "langchain_community.vectorstores.meilisearch",
@@ -448,7 +478,7 @@ _module_lookup = {
     "MyScale": "langchain_community.vectorstores.myscale",
     "MyScaleSettings": "langchain_community.vectorstores.myscale",
     "Neo4jVector": "langchain_community.vectorstores.neo4j_vector",
-    "NeuralDBClientVectorStore": "langchain_community.vectorstores.thirdai_neuraldb",  # noqa: E501
+    "NeuralDBClientVectorStore": "langchain_community.vectorstores.thirdai_neuraldb",
     "NeuralDBVectorStore": "langchain_community.vectorstores.thirdai_neuraldb",
     "OpenSearchVectorSearch": "langchain_community.vectorstores.opensearch_vector_search",  # noqa: E501
     "OracleVS": "langchain_community.vectorstores.oraclevs",
@@ -461,6 +491,7 @@ _module_lookup = {
     "Relyt": "langchain_community.vectorstores.relyt",
     "Rockset": "langchain_community.vectorstores.rocksetdb",
     "SKLearnVectorStore": "langchain_community.vectorstores.sklearn",
+    "SQLiteVec": "langchain_community.vectorstores.sqlitevec",
     "SQLiteVSS": "langchain_community.vectorstores.sqlitevss",
     "ScaNN": "langchain_community.vectorstores.scann",
     "SemaDB": "langchain_community.vectorstores.semadb",
@@ -468,6 +499,7 @@ _module_lookup = {
     "StarRocks": "langchain_community.vectorstores.starrocks",
     "SupabaseVectorStore": "langchain_community.vectorstores.supabase",
     "SurrealDBStore": "langchain_community.vectorstores.surrealdb",
+    "TablestoreVectorStore": "langchain_community.vectorstores.tablestore",
     "Tair": "langchain_community.vectorstores.tair",
     "TencentVectorDB": "langchain_community.vectorstores.tencentvectordb",
     "TiDBVectorStore": "langchain_community.vectorstores.tidb_vector",
@@ -487,6 +519,7 @@ _module_lookup = {
     "Weaviate": "langchain_community.vectorstores.weaviate",
     "Yellowbrick": "langchain_community.vectorstores.yellowbrick",
     "ZepVectorStore": "langchain_community.vectorstores.zep",
+    "ZepCloudVectorStore": "langchain_community.vectorstores.zep_cloud",
     "Zilliz": "langchain_community.vectorstores.zilliz",
 }
 
@@ -496,6 +529,3 @@ def __getattr__(name: str) -> Any:
         module = importlib.import_module(_module_lookup[name])
         return getattr(module, name)
     raise AttributeError(f"module {__name__} has no attribute {name}")
-
-
-__all__ = list(_module_lookup.keys())

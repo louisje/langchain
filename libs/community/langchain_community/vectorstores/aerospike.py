@@ -168,7 +168,7 @@ class Aerospike(VectorStore):
 
         Args:
             texts: Iterable of strings to add to the vectorstore.
-            metadatas: Optional list of metadatas associated with the texts.
+            metadatas: Optional list of metadata associated with the texts.
             ids: Optional list of ids to associate with the texts.
             set_name: Optional aerospike set name to add the texts to.
             batch_size: Batch size to use when adding the texts to the vectorstore.
@@ -178,7 +178,7 @@ class Aerospike(VectorStore):
             wait_for_index: If True, wait for the all the texts to be indexed
                 before returning. Requires index_name to be provided. Defaults
                 to True.
-            **kwargs: Additional keyword arguments to pass to the client upsert call.
+            kwargs: Additional keyword arguments to pass to the client upsert call.
 
         Returns:
             List of ids from adding the texts into the vectorstore.

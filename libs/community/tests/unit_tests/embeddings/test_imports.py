@@ -1,11 +1,13 @@
 from langchain_community.embeddings import __all__, _module_lookup
 
 EXPECTED_ALL = [
+    "ClovaEmbeddings",
     "OpenAIEmbeddings",
     "AnyscaleEmbeddings",
     "AzureOpenAIEmbeddings",
     "BaichuanTextEmbeddings",
     "ClarifaiEmbeddings",
+    "ClovaXEmbeddings",
     "CohereEmbeddings",
     "DatabricksEmbeddings",
     "ElasticsearchEmbeddings",
@@ -24,6 +26,7 @@ EXPECTED_ALL = [
     "MlflowAIGatewayEmbeddings",
     "MlflowEmbeddings",
     "MlflowCohereEmbeddings",
+    "Model2vecEmbeddings",
     "ModelScopeEmbeddings",
     "TensorflowHubEmbeddings",
     "SagemakerEndpointEmbeddings",
@@ -54,10 +57,12 @@ EXPECTED_ALL = [
     "LocalAIEmbeddings",
     "AwaEmbeddings",
     "HuggingFaceBgeEmbeddings",
+    "IpexLLMBgeEmbeddings",
     "ErnieEmbeddings",
     "JavelinAIGatewayEmbeddings",
     "OllamaEmbeddings",
     "OracleEmbeddings",
+    "OVHCloudEmbeddings",
     "QianfanEmbeddingsEndpoint",
     "JohnSnowLabsEmbeddings",
     "VoyageEmbeddings",
@@ -75,6 +80,10 @@ EXPECTED_ALL = [
     "OpenVINOEmbeddings",
     "OpenVINOBgeEmbeddings",
     "SolarEmbeddings",
+    "AscendEmbeddings",
+    "ZhipuAIEmbeddings",
+    "TextEmbedEmbeddings",
+    "HunyuanEmbeddings",
 ]
 
 

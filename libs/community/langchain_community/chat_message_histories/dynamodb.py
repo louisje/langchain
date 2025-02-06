@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from decimal import Decimal
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 from langchain_core.chat_history import BaseChatMessageHistory
@@ -15,6 +16,16 @@ if TYPE_CHECKING:
     from boto3.session import Session
 
 logger = logging.getLogger(__name__)
+
+
+def convert_messages(item: List) -> List:
+    if isinstance(item, list):
+        return [convert_messages(i) for i in item]
+    elif isinstance(item, dict):
+        return {k: convert_messages(v) for k, v in item.items()}
+    elif isinstance(item, float):
+        return Decimal(str(item))
+    return item
 
 
 class DynamoDBChatMessageHistory(BaseChatMessageHistory):
@@ -45,6 +56,10 @@ class DynamoDBChatMessageHistory(BaseChatMessageHistory):
             [AWS DynamoDB documentation](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/time-to-live-ttl-how-to.html)
         history_size: Maximum number of messages to store. If None then there is no
             limit. If not None then only the latest `history_size` messages are stored.
+        history_messages_key: Key for the chat history where the messages
+            are stored and updated
+        coerce_float_to_decimal: If True, all float values in the messages will be
+            converted to Decimal.
     """
 
     def __init__(
@@ -59,6 +74,9 @@ class DynamoDBChatMessageHistory(BaseChatMessageHistory):
         ttl: Optional[int] = None,
         ttl_key_name: str = "expireAt",
         history_size: Optional[int] = None,
+        history_messages_key: Optional[str] = "History",
+        *,
+        coerce_float_to_decimal: bool = False,
     ):
         if boto3_session:
             client = boto3_session.resource("dynamodb", endpoint_url=endpoint_url)
@@ -79,6 +97,8 @@ class DynamoDBChatMessageHistory(BaseChatMessageHistory):
         self.ttl = ttl
         self.ttl_key_name = ttl_key_name
         self.history_size = history_size
+        self.history_messages_key = history_messages_key
+        self.coerce_float_to_decimal = coerce_float_to_decimal
 
         if kms_key_id:
             try:
@@ -96,7 +116,9 @@ class DynamoDBChatMessageHistory(BaseChatMessageHistory):
 
             actions = AttributeActions(
                 default_action=CryptoAction.DO_NOTHING,
-                attribute_actions={"History": CryptoAction.ENCRYPT_AND_SIGN},
+                attribute_actions={
+                    self.history_messages_key: CryptoAction.ENCRYPT_AND_SIGN
+                },
             )
             aws_kms_cmp = AwsKmsCryptographicMaterialsProvider(key_id=kms_key_id)
             self.table = EncryptedTable(
@@ -126,7 +148,7 @@ class DynamoDBChatMessageHistory(BaseChatMessageHistory):
                 logger.error(error)
 
         if response and "Item" in response:
-            items = response["Item"]["History"]
+            items = response["Item"][self.history_messages_key]
         else:
             items = []
 
@@ -153,6 +175,9 @@ class DynamoDBChatMessageHistory(BaseChatMessageHistory):
         _message = message_to_dict(message)
         messages.append(_message)
 
+        if self.coerce_float_to_decimal:
+            messages = convert_messages(messages)
+
         if self.history_size:
             messages = messages[-self.history_size :]
 
@@ -161,11 +186,20 @@ class DynamoDBChatMessageHistory(BaseChatMessageHistory):
                 import time
 
                 expireAt = int(time.time()) + self.ttl
-                self.table.put_item(
-                    Item={**self.key, "History": messages, self.ttl_key_name: expireAt}
+                self.table.update_item(
+                    Key={**self.key},
+                    UpdateExpression=(
+                        f"set {self.history_messages_key} = :h, "
+                        f"{self.ttl_key_name} = :t"
+                    ),
+                    ExpressionAttributeValues={":h": messages, ":t": expireAt},
                 )
             else:
-                self.table.put_item(Item={**self.key, "History": messages})
+                self.table.update_item(
+                    Key={**self.key},
+                    UpdateExpression=f"set {self.history_messages_key} = :h",
+                    ExpressionAttributeValues={":h": messages},
+                )
         except ClientError as err:
             logger.error(err)
 
